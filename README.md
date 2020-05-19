@@ -119,3 +119,15 @@ Javascript Object Parameters:
 | ------------- |:-----------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
 | hexRGBValue   | This is the color all the leds will be set to.                         | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
 | iLed          | This is the index of the led you want to retrieve the color from.      | A number between 0 and NUM_LEDS - 1, both included, in string format.                    |
+
+* ### Set-Colors Command:
+```javascript
+let jsObjectSetColors = {"1":"#ff00ff","2":"#ff00ff","3":"#ff00ff","4":"#ff00ff","5":"#ff00ff"..., "148": "#ff00ff", "149": "#ff00ff"};
+WebSocket.send("set-colors:" + JSON.stringify(jsObjectSetColors) + ":set-colors");
+```
+This command can be used to set all the leds with different colors. You must to set all the leds.
+
+Javascript Object Parameters:
+| Name                                                                                        | Description                                                                 | Possible Values                                                                          |
+| --------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
+| iLed ; where iLed is a number between 0 and NUM_LEDS - 1 (both included) in string format   | This is the color the single led will be set to.                            | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
