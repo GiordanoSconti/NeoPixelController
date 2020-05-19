@@ -118,7 +118,7 @@ Javascript Object Parameters:
 | Name          | Description                                                            | Possible Values                                                                          |
 | ------------- |:-----------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
 | hexRGBValue   | This is the color all the leds will be set to.                         | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
-| iLed          | This is the index of the led you want to retrieve the color from.      | A number between 0 and NUM_LEDS - 1, both included, in string format.                    |
+| iLed          | This is the index of the led you want to set the color to.      | A number between 0 and NUM_LEDS - 1, both included, in string format.                    |
 
 * ### Set-Colors Command:
 ```javascript
@@ -144,3 +144,21 @@ Javascript Object Parameters:
 |---------------|:-------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
 | direction     | This allows you to choose the rainbow direction.                         | string: "right" or "left"                                                                |
 | delay         | This allows you to choose the speed of the rainbow.                      | A number which represents the delay in milliseconds.                                     |
+
+* ### Set-Colors-Brightness Command:
+```javascript
+let jsObjectSetColorsBrightness = {"1": {"hexRGBValue": "#ff00ff", "brightness": 64},"2":{"hexRGBValue": "#ff00ff", "brightness": 64},"3":{"hexRGBValue": "#ff00ff", "brightness": 64}..., "148": {"hexRGBValue": "#ff00ff", "brightness": 64}, "149": {"hexRGBValue": "#ff00ff", "brightness": 64}};
+WebSocket.send("set-colors-brightness:" + JSON.stringify(jsObjectSetColorsBrightness) + ":set-colors-brightness");
+```
+This command can be used to set all the leds with different colors and different brightness. You must to set all the leds.
+
+Javascript Object Parameters:
+| Name                                                                                        | Description                                                                 | Possible Values                                                                          |
+| --------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
+| iLed ; where iLed is a number between 0 and NUM_LEDS - 1 (both included) in string format   | This is the the single led the color and brightness will be set to.         | LedParameters                                                                            |
+
+LedParameters:
+| Name          | Description                                         | Possible Values                                                                         |
+| ------------- |:----------------------------------------------------|:----------------------------------------------------------------------------------------|
+| hexRGBValue   | This is the color the led will be set to.           | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value |
+| brightness    | This is the brightness the led will be set to.      | Number between 0 and 255, both included.                                                |
