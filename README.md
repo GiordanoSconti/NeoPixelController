@@ -15,3 +15,11 @@ Javascript Object Parameters:
 | ------------- |:----------------------------------------------------|:------------------------------------------------------------------|
 | hexRGBValue   | This is the color all the leds will be set to.      | #rrggbb ; where rr = Red Value, gg = Green Value, bb = Blue Value |
 | brightness    | This is the brightness all the leds will be set to. | Number between 0 and 255, both included.                          |
+
+* ### Set-Rainbow Command:
+```javascript
+WebSocket.send("set-rainbow");
+```
+This command can be used to reproduce a static rainbow effect.
+
+No Parameters are needed.
