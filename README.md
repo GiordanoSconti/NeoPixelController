@@ -94,3 +94,15 @@ CommandParameters:
 | color         | The color of a single led, of a range of leds or of all the leds.        | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
 | brightness    | The brightness of a single led, of a range of leds or of all the leds.   | A number between 0 and 255, both included.                                               |
 | delay         | The delay between the current command and the next one.                  | A number which represents the delay in milliseconds.                                     |
+
+* ### Get-Led-Color Command:
+```javascript
+let jsObjectGetLedColor = {"iLed": "0"};
+WebSocket.send("get-led-color:" + JSON.stringify(jsObjectGetLedColor) + ":get-led-color");
+```
+This command can be use to get a single led color.
+
+Javascript Object Parameters:
+| Name          | Description                                                            | Possible Values                                                       |
+| ------------- |:-----------------------------------------------------------------------|:----------------------------------------------------------------------|
+| iLed          | This is the index of the led you want to retrieve the color from.      | A number between 0 and NUM_LEDS - 1, both included, in string format. |
