@@ -162,3 +162,10 @@ LedParameters:
 | ------------- |:----------------------------------------------------|:----------------------------------------------------------------------------------------|
 | hexRGBValue   | This is the color the led will be set to.           | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value |
 | brightness    | This is the brightness the led will be set to.      | Number between 0 and 255, both included.                                                |
+
+# Dependecies:
+* [FastLED Library](https://github.com/FastLED/FastLED)
+* [ArduinoJson Library](https://github.com/bblanchon/ArduinoJson)
+* [ArduinoWebsockets Library](https://github.com/gilmaimon/ArduinoWebsockets)
+* [ESP32 Arduino Core](https://github.com/espressif/arduino-esp32)
+* [Arduino IDE](https://www.arduino.cc/en/Main/Software)
