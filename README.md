@@ -131,3 +131,16 @@ Javascript Object Parameters:
 | Name                                                                                        | Description                                                                 | Possible Values                                                                          |
 | --------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
 | iLed ; where iLed is a number between 0 and NUM_LEDS - 1 (both included) in string format   | This is the color the single led will be set to.                            | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
+
+* ### Flow-Rainbow Command:
+```javascript
+let jsObjectFlowRainbow = {"direction": "left", "delay": 15};
+WebSocket.send("flow-rainbow:" + JSON.stringify(jsObjectSetColors) + ":flow-rainbow");
+```
+This command can be used to reproduce a static rainbow effect, but every milliseconds (delay parameter) will be made scrolling in the left or right direction (direction parameter).
+
+Javascript Object Parameters:
+| Name          | Description                                                              | Possible Values                                                                          |
+|---------------|:-------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
+| direction     | This allows you to choose the rainbow direction.                         | string: "right" or "left"                                                                |
+| delay         | This allows you to choose the speed of the rainbow.                      | A number which represents the delay in milliseconds.                                     |
