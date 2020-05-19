@@ -12,8 +12,10 @@ using namespace websockets;
 #define NUM_LEDS 150
 #define BRIGHTNESS 64
 #define PATTERN_SIZE 160
+#define SERVER_PORT_NUMBER 27932
 
-const char *ssid = "YOUR-NETWORK-SSID";
+const char *ssidName = "YOUR-NETWORK-SSID";
+const char *ssidPassword = "YOUR-NETWORK-PASSWORD";
 WebsocketsServer webSocketServer;
 std::vector<WebsocketsClient> allClients;
 bool isReceivingJson = false;
@@ -185,7 +187,7 @@ void setup (void) {
     setNeoPixelRGBColor(1);
     Serial.println("NeoPixel started!");
     WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, "YOUR-NETWORK-PASSWORD");
+    WiFi.begin(ssidName, ssidPassword);
     Serial.println("");
     while(WiFi.status() != WL_CONNECTED) {
         delayMilliseconds(500);
@@ -193,11 +195,11 @@ void setup (void) {
     }
     Serial.println("");
     Serial.print("Connected to ");
-    Serial.println(ssid);
+    Serial.println(ssidName);
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
     setNeoPixelRGBColor(2);
-    webSocketServer.listen(27932);
+    webSocketServer.listen(SERVER_PORT_NUMBER);
     delayMilliseconds(500);
     if(!webSocketServer.available())
     {
