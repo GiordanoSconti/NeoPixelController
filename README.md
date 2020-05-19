@@ -23,3 +23,19 @@ WebSocket.send("set-rainbow");
 This command can be used to reproduce a static rainbow effect.
 
 No Parameters are needed.
+
+* ### Get-Led-Colors Command:
+```javascript
+WebSocket.send("get-led-colors");
+```
+This command can be used to get the current colors of the leds.
+
+No Parameters are needed.
+
+* ### Stop-Task Command:
+```javascript
+WebSocket.send("stop-task");
+```
+This command can be used to stop a running task before sending other commands.
+
+No Parameters are needed.
