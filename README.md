@@ -179,4 +179,5 @@ By changing "#define BRIGHTNESS_FADE_BY" value, you can move the default offset 
 * #define NEO_PIN = DOUT PIN of the LED Strip.
 * #define NUM_LEDS = Number of leds the strip is composed of.
 * #define BRIGHTNESS = Brightness of the all leds.
+* #define BRIGHTNESS_FADE_BY = Offset for fadeByBlackTo method.
 * #define SERVER_PORT_NUMBER = WebSocket Server port on which is listening to.
