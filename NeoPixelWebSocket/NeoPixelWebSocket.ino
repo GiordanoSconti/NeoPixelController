@@ -11,6 +11,7 @@ using namespace websockets;
 #define NEO_PIN 5
 #define NUM_LEDS 150
 #define BRIGHTNESS 64
+#define BRIGHTNESS_FADE_BY 0
 #define PATTERN_SIZE 160
 #define SERVER_PORT_NUMBER 27932
 
@@ -293,7 +294,7 @@ void setNeoPixelColors(int colors[][4], bool isSetColorsBrightness, int startId,
     for(int i = startId; i < endId; i++) {
         leds[i].setRGB(colors[i][0], colors[i][1], colors[i][2]);
         if(isSetColorsBrightness)
-            leds[i].fadeToBlackBy(colors[i][3] + BRIGHTNESS);
+            leds[i].fadeToBlackBy(colors[i][3] + BRIGHTNESS_FADE_BY);
     }
     FastLED.show();
     delayMilliseconds(50);
@@ -303,7 +304,7 @@ void setNeoPixelMusic(int colors[])
 {
     for(int i = 0; i < NUM_LEDS; i++) {
         leds[i].setRGB(colors[0], colors[1], colors[2]);
-        leds[i].fadeToBlackBy(colors[3] + BRIGHTNESS);
+        leds[i].fadeToBlackBy(colors[3] + BRIGHTNESS_FADE_BY);
     }
     FastLED.show();
     delayMilliseconds(50);
@@ -313,7 +314,7 @@ void setNeoPixelRangeColors(int colors[], int startId, int endId)
 {
     for(int i = startId; i <= endId; i++) {
         leds[i].setRGB(colors[0], colors[1], colors[2]);
-        leds[i].fadeToBlackBy(colors[3] + BRIGHTNESS);
+        leds[i].fadeToBlackBy(colors[3] + BRIGHTNESS_FADE_BY);
     }
     FastLED.show();
     delayMilliseconds(50);
@@ -337,7 +338,7 @@ void setNeoPixelColor(int iLed, int colors[])
 
 void setNeoPixelRainbow(){
     fill_rainbow(leds, NUM_LEDS, 0, 255/NUM_LEDS);
-    fadeToBlackBy(leds, NUM_LEDS, BRIGHTNESS);
+    fadeToBlackBy(leds, NUM_LEDS, BRIGHTNESS_FADE_BY);
     FastLED.show();
     delayMilliseconds(50);
 }
