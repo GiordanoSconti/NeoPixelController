@@ -745,7 +745,7 @@ void setColors(bool isSetColorsBrightness)
 
 void getColor(){
     jsonData = jsonData.substring(jsonData.indexOf("get-led-color:") + 14, jsonData.indexOf(":get-led-color"));
-    DynamicJsonDocument dynamicJsonDocument(24);
+    DynamicJsonDocument dynamicJsonDocument(25);
     DeserializationError deserializationError = deserializeJson(dynamicJsonDocument, jsonData);
     delayMilliseconds(1);
     if (deserializationError) {
