@@ -22,7 +22,7 @@ WebSocket.send("set-rainbow");
 ```
 This command can be used to reproduce a static rainbow effect.
 
-No Parameters are needed.
+No parameters are needed.
 
 * ### Get-Led-Colors Command:
 ```javascript
@@ -30,15 +30,15 @@ WebSocket.send("get-led-colors");
 ```
 This command can be used to get the current colors of the leds.
 
-No Parameters are needed.
+No parameters are needed.
 
 * ### Stop-Task Command:
 ```javascript
 WebSocket.send("stop-task");
 ```
-This command can be used to stop a running task before sending other commands.
+This command can be used to stop a running task. You need to use it before sending other commands if you used one of these: set-pattern; flow-rainbow.
 
-No Parameters are needed.
+No parameters are needed.
 
 * ### Set-Pattern Command:
 ```javascript
@@ -91,8 +91,8 @@ CommandParameters:
 | id            | This allows you to select a range of leds, a single led or all the leds. | "all", "range" or a number between 0 and NUM_LEDS - 1 (both included), in string format. |
 | start-id      | This allows you to choose the starting led of the range.                 | A number between 0 and NUM_LEDS - 1, both included, in string format.                    |
 | end-id        | This allows you to choose the ending led of the range.                   | A number between 0 and NUM_LEDS - 1, both included, in string format.                    |
-| color         | The color of a single led, of a range of leds or of all the leds.        | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
-| brightness    | The brightness of a single led, of a range of leds or of all the leds.   | A number between 0 and 255, both included.                                               |
+| color         | The color of a single led, a range of leds or all the leds.              | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
+| brightness    | The brightness of a single led, a range of leds or all the leds.         | A number between 0 and 255, both included.                                               |
 | delay         | The delay between the current command and the next one.                  | A number which represents the delay in milliseconds.                                     |
 
 * ### Get-Led-Color Command:
@@ -100,7 +100,7 @@ CommandParameters:
 let jsObjectGetLedColor = {"iLed": "0"};
 WebSocket.send("get-led-color:" + JSON.stringify(jsObjectGetLedColor) + ":get-led-color");
 ```
-This command can be use to get a single led color.
+This command can be use to get the color of a led.
 
 Javascript Object Parameters:
 | Name          | Description                                                            | Possible Values                                                       |
@@ -112,20 +112,20 @@ Javascript Object Parameters:
 let jsObjectSetColor = {"hexRGBValue": "#ff0000", "iLed": "149"};
 WebSocket.send("set-color:" + JSON.stringify(jsObjectSetColor) + ":set-color");
 ```
-This command can be used to set a single color led.
+This command can be used to set the color of a led.
 
 Javascript Object Parameters:
 | Name          | Description                                                            | Possible Values                                                                          |
 | ------------- |:-----------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
-| hexRGBValue   | This is the color all the leds will be set to.                         | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
-| iLed          | This is the index of the led you want to set the color to.      | A number between 0 and NUM_LEDS - 1, both included, in string format.                    |
+| hexRGBValue   | This is the color the led will be set to.                              | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
+| iLed          | This is the index of the led you want to set the color to.             | A number between 0 and NUM_LEDS - 1, both included, in string format.                    |
 
 * ### Set-Colors Command:
 ```javascript
 let jsObjectSetColors = {"1":"#ff00ff","2":"#ff00ff","3":"#ff00ff","4":"#ff00ff","5":"#ff00ff"..., "148": "#ff00ff", "149": "#ff00ff"};
 WebSocket.send("set-colors:" + JSON.stringify(jsObjectSetColors) + ":set-colors");
 ```
-This command can be used to set all the leds with different colors. You must to set all the leds.
+This command can be used to set all the leds with different colors. You must set all the leds.
 
 Javascript Object Parameters:
 | Name                                                                                        | Description                                                                 | Possible Values                                                                          |
@@ -137,25 +137,25 @@ Javascript Object Parameters:
 let jsObjectFlowRainbow = {"direction": "left", "delay": 15};
 WebSocket.send("flow-rainbow:" + JSON.stringify(jsObjectSetColors) + ":flow-rainbow");
 ```
-This command can be used to reproduce a static rainbow effect, but every milliseconds (delay parameter) will be made scrolling in the left or right direction (direction parameter).
+This command can be used to reproduce a static rainbow effect, but every some milliseconds (delay parameter) it will be made scrolling in the left or right direction (depending on the direction parameter).
 
 Javascript Object Parameters:
 | Name          | Description                                                              | Possible Values                                                                          |
 |---------------|:-------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
 | direction     | This allows you to choose the rainbow direction.                         | string: "right" or "left"                                                                |
-| delay         | This allows you to choose the speed of the rainbow.                      | A number which represents the delay in milliseconds.                                     |
+| delay         | This allows you to choose the rainbow speed.                      | A number which represents the delay in milliseconds.                                     |
 
 * ### Set-Colors-Brightness Command:
 ```javascript
 let jsObjectSetColorsBrightness = {"1": {"hexRGBValue": "#ff00ff", "brightness": 64},"2":{"hexRGBValue": "#ff00ff", "brightness": 64},"3":{"hexRGBValue": "#ff00ff", "brightness": 64}..., "148": {"hexRGBValue": "#ff00ff", "brightness": 64}, "149": {"hexRGBValue": "#ff00ff", "brightness": 64}};
 WebSocket.send("set-colors-brightness:" + JSON.stringify(jsObjectSetColorsBrightness) + ":set-colors-brightness");
 ```
-This command can be used to set all the leds with different colors and different brightness. You must to set all the leds.
+This command can be used to set all the leds with different colors and different brightness. You must set all the leds.
 
 Javascript Object Parameters:
 | Name                                                                                        | Description                                                                 | Possible Values                                                                          |
 | --------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
-| iLed ; where iLed is a number between 0 and NUM_LEDS - 1 (both included) in string format   | This is the the single led the color and brightness will be set to.         | LedParameters                                                                            |
+| iLed ; where iLed is a number between 0 and NUM_LEDS - 1 (both included) in string format   | This is the led the color and the brightness will be set to.                | LedParameters                                                                            |
 
 LedParameters:
 | Name          | Description                                         | Possible Values                                                                         |
@@ -179,6 +179,6 @@ By changing "#define BRIGHTNESS_FADE_BY" value you can move the offset of fadeTo
 * #define NEO_PIN = DOUT PIN of the LED Strip.
 * #define NUM_LEDS = Number of leds the strip is composed of.
 * #define BRIGHTNESS = Brightness of the all leds.
-* #define BRIGHTNESS_FADE_BY = Offset for fadeByBlackTo method.
-* #define SERVER_PORT_NUMBER = WebSocket Server port on which is listening to.
+* #define BRIGHTNESS_FADE_BY = Offset for fadeToBlackBy method.
+* #define SERVER_PORT_NUMBER = WebSocket Server port on which the server listens.
 * #define DITHER_FLAG = Temporal Dithering flag.
