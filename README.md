@@ -181,3 +181,4 @@ By changing "#define BRIGHTNESS_FADE_BY" value you can move the offset of fadeTo
 * #define BRIGHTNESS = Brightness of the all leds.
 * #define BRIGHTNESS_FADE_BY = Offset for fadeByBlackTo method.
 * #define SERVER_PORT_NUMBER = WebSocket Server port on which is listening to.
+* #define DITHER_FLAG = Temporal Dithering flag.
