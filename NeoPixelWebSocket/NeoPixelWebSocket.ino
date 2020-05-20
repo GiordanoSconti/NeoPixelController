@@ -14,6 +14,7 @@ using namespace websockets;
 #define BRIGHTNESS_FADE_BY 0
 #define PATTERN_SIZE 160
 #define SERVER_PORT_NUMBER 27932
+#define DITHER_FLAG 0
 
 const char *ssidName = "YOUR-NETWORK-SSID";
 const char *ssidPassword = "YOUR-NETWORK-PASSWORD";
@@ -183,6 +184,7 @@ void setup (void) {
     delayMilliseconds(50);
     FastLED.addLeds<WS2812B, NEO_PIN, GRB>(leds, NUM_LEDS);
     FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
+    FastLED.setDither(DITHER_FLAG);
     FastLED.setBrightness(BRIGHTNESS);
     delayMilliseconds(50);
     setNeoPixelRGBColor(1);
