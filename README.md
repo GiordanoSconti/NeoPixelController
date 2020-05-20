@@ -169,3 +169,14 @@ LedParameters:
 * [ArduinoWebsockets Library](https://github.com/gilmaimon/ArduinoWebsockets)
 * [ESP32 Arduino Core](https://github.com/espressif/arduino-esp32)
 * [Arduino IDE](https://www.arduino.cc/en/Main/Software)
+
+# Brightness Management:
+By changing "#define BRIGHTNESS" value, you can move the default offset of fadeToBlackBy, which corresponds to the global brightness as well. By default is 64, so when you need to change the brightness of the leds you need to keep in consideration this thing. If you want full control over the brightness, you need to set "#define BRIGHTNESS" to 255 in order to set "brightness" parameter freely. Keep in mind that by doing this, you set the global brightness at full. By the way, you have to change even the power settings, by default the power is limited at 5W (5V, 1A).
+
+# Important Settings:
+ssidName = Name of your Network.
+ssidPassword = Password of your Network.
+#define NEO_PIN = DOUT PIN of the LED Strip.
+#define NUM_LEDS = Number of leds the strip is composed of.
+#define BRIGHTNESS = Brightness of the all leds.
+#define SERVER_PORT_NUMBER = WebSocket Server port on which is listening to.
