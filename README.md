@@ -171,7 +171,7 @@ LedParameters:
 * [Arduino IDE](https://www.arduino.cc/en/Main/Software)
 
 # Brightness Management:
-By changing "#define BRIGHTNESS" value, you can move the default offset of fadeToBlackBy, which corresponds to the global brightness as well. By default is 64, so when you need to change the brightness of the leds you need to keep in consideration this thing. If you want full control over the brightness, you need to set "#define BRIGHTNESS" to 255 in order to set "brightness" parameter freely. Keep in mind that by doing this, you set the global brightness at full. By the way, you have to change even the power settings, by default the power is limited at 5W (5V, 1A).
+By changing "#define BRIGHTNESS_FADE_BY" value, you can move the default offset of fadeToBlackBy, which is 0 by default. When you need to change the brightness of the leds you have to keep in mind this offset. If you want full control over the brightness, you need to set "#define BRIGHTNESS" to 255 and "#define BRIGHTNESS_FADE_BY" to 0 in order to set "brightness" parameter freely. Keep in mind that by doing this, you set the global brightness at full. By the way, you have to change even the power settings, because by default the power is limited at 5W (5V, 1A).
 
 # Important Settings:
 * ssidName = Name of your Network.
