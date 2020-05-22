@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>NeoPixel IDE</title>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <style>
+            .svg-icons-container, .buttons-container {
+                display: flex;
+                align-items: flex-start;
+                align-content: flex-start;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .svg-icons-container {
+                flex-direction: row;
+            }
+
+            .buttons-container {
+                flex-direction: column;
+            }
+
+            .svg-icon {
+                width: 62.5px;
+                height: 62.5px;
+                -ms-transform-origin: 50% 50%;
+                -o-transform-origin: 50% 50%;
+                -moz-transform-origin: 50% 50%;
+                -webkit-transform-origin: 50% 50%;
+                transform-origin: 50% 50%;
+                -ms-transform: rotate(90deg);
+                -o-transform: rotate(90deg);
+                -moz-transform: rotate(90deg);
+                -webkit-transform: rotate(90deg);
+                transform: rotate(90deg);
+                display: inline-block;
+            }
+
+            .slider {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 100%;
+                height: 15px;
+                border-radius: 5px;
+                background: #d3d3d3; 
+                outline: none;
+                opacity: 0.7;
+                -webkit-transition: opacity .2s;
+                transition: opacity .2s;
+            }
+
+            .slider:hover {
+                opacity: 1;
+            }
+
+            .slider::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 25px;
+                height: 25px;
+                border-radius: 50%;
+                background: #000;
+                cursor: pointer;
+            }
+
+            .slider::-moz-range-thumb {
+                width: 25px;
+                height: 25px;
+                border-radius: 50%;
+                background: #000;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root">
+            <div class="svg-icons-container">
+            </div>
+            <div class="input-text-container">
+                <label for="leds-count">Leds Count:</label>
+                <input type="text" id="leds-count" name="leds-count" />
+                <button id="generate-leds-button">Generate Led Strip</button>
+            </div>
+            <div class="buttons-container">
+                <button id="simulate-rainbow-button">Simulate Rainbow Effect</button>
+                <div class="set-color-container">
+                    <label for="set-color-index">Led Index:</label>
+                    <input type="text" id="set-color-index" name="set-color-index" />
+                    <label for="set-color-value">Color:</label>
+                    <input type="color" id="set-color-value" name="set-color-value" />
+                    <button id="set-led-color-button">Set Led Color</button>
+                </div>
+                <div class="set-color-container">
+                    <label for="leds-color-value">Color:</label>
+                    <input type="color" id="leds-color-value" name="leds-color-value" />
+                    <label for="leds-brightness-value">Brightness:</label>
+                    <input type="range" min="0" max="100" value="100" class="slider" id="leds-brightness-value" name="leds-brightness-value">
+                    <button id="set-leds-color-button">Set Leds Color</button>
+                </div>
+                <div class="set-color-container">
+                    <label for="get-color-index">Led Index:</label>
+                    <input type="text" id="get-color-index" name="get-color-index" />
+                    <label for="get-color-value">Color:</label>
+                    <input type="color" id="get-color-value" name="get-color-value" disabled readonly />
+                    <button id="get-led-color-button">Get Led Color</button>
+                </div>
+            </div>
+        </div>
+        <script type="text/babel">
+            let ledsCount = 0;
+            const svgLedsContainer = $(".svg-icons-container");
+            const numRegex = /^[0-9]{1,}$/;
+            function RgbToHsv(r, g, b) {
+                var min = Math.min(r, g, b),
+                    max = Math.max(r, g, b),
+                    delta = max - min,
+                    h, s, v = max;
+                v = Math.floor(max / 255 * 100);
+                if (max == 0) return [0, 0, 0];
+                s = Math.floor(delta / max * 100);
+                var deltadiv = delta == 0 ? 1 : delta;
+                if( r == max ) h = (g - b) / deltadiv;
+                else if(g == max) h = 2 + (b - r) / deltadiv;
+                else h = 4 + (r - g) / deltadiv;
+                h = Math.floor(h * 60);
+                if( h < 0 ) h += 360;
+                return { h: h, s: s, v: v }
+            }
+            function HsvToRgb(h, s, v) {
+                h = h / 360;
+                s = s / 100;
+                v = v / 100;
+                if (s == 0)
+                {
+                    var val = Math.round(v * 255);
+                    return {r: val, g: val, b: val};
+                }
+                let red = 0;
+                let green = 0;
+                let blue = 0;
+                let hPos = h * 6;
+                let hPosBase = Math.floor(hPos);
+                let base1 = v * (1 - s);
+                let base2 = v * (1 - s * (hPos - hPosBase));
+                let base3 = v * (1 - s * (1 - (hPos - hPosBase)));
+                if (hPosBase == 0) {red = v; green = base3; blue = base1}
+                else if (hPosBase == 1) {red = base2; green = v; blue = base1}
+                else if (hPosBase == 2) {red = base1; green = v; blue = base3}
+                else if (hPosBase == 3) {red = base1; green = base2; blue = v}
+                else if (hPosBase == 4) {red = base3; green = base1; blue = v}
+                else {red = v; green = base1; blue = base2};
+                red = Math.round(red * 255);
+                green = Math.round(green * 255);
+                blue = Math.round(blue * 255);
+                return {r: red, g: green, b: blue};
+            }
+            function rgbToHex(rgbValue)
+            {
+                var matches = rgbValue.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+                function hex(x) {
+                    return ("0" + parseInt(x).toString(16)).slice(-2);
+                }
+                return "#" + hex(matches[1]) + hex(matches[2]) + hex(matches[3]);
+            }
+            function hexToRgb(hexValue) {
+                let r = 0, g = 0, b = 0;
+                if (hexValue.length == 4) {
+                    r = "0x" + hexValue[1] + hexValue[1];
+                    g = "0x" + hexValue[2] + hexValue[2];
+                    b = "0x" + hexValue[3] + hexValue[3];
+                } else if (hexValue.length == 7) {
+                    r = "0x" + hexValue[1] + hexValue[2];
+                    g = "0x" + hexValue[3] + hexValue[4];
+                    b = "0x" + hexValue[5] + hexValue[6];
+                }
+                return "rgb("+ parseInt(r, 16).toString(10) + "," + parseInt(g, 16).toString(10) + "," + parseInt(b, 16).toString(10) + ")";
+            }
+            function checkLedsPresence(){
+                let svgLeds = $(".svg-icon");
+                if(svgLeds != null && typeof svgLeds !== "undefined" && svgLeds.length > 0)
+                    return true;
+                else
+                    return false;
+            }
+            function getLedsCount(){
+                let ledsCountElement = $("#leds-count");
+                if(ledsCountElement != null && ledsCountElement !== "undefined" && ledsCountElement.length > 0)
+                {
+                    let ledsCountValue = ledsCountElement.val();
+                    if(numRegex.test(ledsCountValue))
+                        return parseInt(ledsCountValue);
+                }
+                return 0;
+            }
+            function getLedIndex(elementID){
+                let setColorLedElement = $(elementID);
+                if(setColorLedElement != null && setColorLedElement !== "undefined" && setColorLedElement.length > 0)
+                {
+                    let setColorLedValue = setColorLedElement.val();
+                    if(numRegex.test(setColorLedValue))
+                    {
+                        setColorLedValue = parseInt(setColorLedValue);
+                        if(setColorLedValue >= 0 && setColorLedValue < ledsCount)
+                            return setColorLedValue;
+                    }
+                }
+                return -1;
+            }
+            function getColor(elementID){
+                let colorLedElement = $(elementID);
+                if(colorLedElement != null && colorLedElement !== "undefined" && colorLedElement.length > 0)
+                    return colorLedElement.val();
+                return "#f1f5f0";
+            }
+            function getBrightness(elementID)
+            {
+                let brightnessLedElement = $(elementID);
+                if(brightnessLedElement != null && brightnessLedElement !== "undefined" && brightnessLedElement.length > 0)
+                    return String(brightnessLedElement.val());
+                return "100";
+            }
+            function setLedBrightness(brightnessValue, rgbColor, svgLed)
+            {
+                rgbColor = rgbColor.replace(/[^0-9,]+/g, "");
+                var red = rgbColor.split(",")[0];
+                var green = rgbColor.split(",")[1];
+                var blu = rgbColor.split(",")[2];
+                var hsv = RgbToHsv(red, green, blu);
+                var rgb = HsvToRgb(hsv.h, hsv.s, brightnessValue);
+                rgbColor = "rgb(" + rgb.r + "," + rgb.g + "," + rgb.b + ")";
+                svgLed.css("fill", rgbToHex(rgbColor));
+            }
+            function getLedBrightness(ledIndex)
+            {
+                let rgbColor = getLedColor(ledIndex);
+                if(typeof rgbColor !== "undefined" && rgbColor != null && rgbColor != "none")
+                {
+                    rgbColor = rgbColor.replace(/[^0-9,]+/g, "");
+                    var red = rgbColor.split(",")[0];
+                    var green = rgbColor.split(",")[1];
+                    var blue = rgbColor.split(",")[2];
+                    console.log(red);
+                    console.log(green);
+                    console.log(blue);
+                    var hsvColor = RgbToHsv(red, green, blue);
+                    console.log(hsvColor);
+                    return hsvColor.v;
+                }
+                return 100;
+            }
+            function setLedColor(elementValueID, elementIndexID){
+                let setLedIndex = getLedIndex(elementIndexID);
+                if(setLedIndex > -1)
+                {
+                    let ledColorValue = getColor(elementValueID);
+                    let svgLed = $("#led-" + setLedIndex);
+                    svgLed.css("fill", ledColorValue);
+                }
+            }
+            function setLedsColor(elementID, brightnessID)
+            {
+                let ledColorValue = hexToRgb(getColor(elementID));
+                let ledBrightnessValue = getBrightness(brightnessID);
+                for(let i = 0; i < ledsCount; ++i)
+                {
+                    let svgLed = $("#led-" + i);
+                    setLedBrightness(ledBrightnessValue, ledColorValue, svgLed);
+                }
+            }
+            function getLedColor(ledIndex)
+            {
+                let svgLed = $("#led-" + ledIndex);
+                return svgLed.css("fill");
+            }
+            function simulateRainbow(){
+                for(let i = 0; i < ledsCount; ++i)
+                {
+                    let svgLed = $("#led-" + i);
+                    if(svgLed != null && typeof svgLed !== "undefined" && svgLed.length > 0)
+                    {
+                        if(i < ledsCount/6 || i == 0)
+                            svgLed.css("fill", "#ee0000");
+                        else if(i < (ledsCount/6)*2 || i == 1)
+                            svgLed.css("fill", "#a74800");
+                        else if(i < (ledsCount/6)*3 || i == 2)
+                            svgLed.css("fill", "#a07d00");
+                        else if(i < (ledsCount/6)*4 || i == 3)
+                            svgLed.css("fill", "#6abb00");
+                        else if(i < (ledsCount/6)*5 || i == 4)
+                            svgLed.css("fill", "#00c030");
+                        else
+                            svgLed.css("fill", "#0bccf4");
+                    }
+                }
+            }
+            $("#generate-leds-button").on("click", function(){
+                ledsCount = getLedsCount();
+                if(ledsCount > 0)
+                {
+                    $(".svg-icon").remove();
+                    for(let i = 0; i < ledsCount; ++i)
+                    {
+                        let svgLedElement = '<div class="svg-icon" id="led-container-' + i + '"><svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="62.5" height="62.5" viewBox="0 0 299.81327 322.99999" version="1.1"><g transform="translate(-84.379066,-233.71935)"><g transform="translate(-1121.9432,-139.28065)"><g><circle style="opacity:1;fill:#6e6e6e;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" cx="1259.9789" cy="385.75" r="12.75"/><circle r="12.75" cy="385.75" cx="1356.2289" style="opacity:1;fill:#6e6e6e;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"/><circle style="opacity:1;fill:#6e6e6e;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" cx="1452.4789" cy="386.45709" r="12.75"/></g><g transform="translate(-4.2691498,297.5)"><circle r="12.75" cy="385.75" cx="1264.248" style="opacity:1;fill:#6e6e6e;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"/><circle style="opacity:1;fill:#6e6e6e;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" cx="1360.498" cy="385.75" r="12.75"/><circle r="12.75" cy="385.75" cx="1456.748" style="opacity:1;fill:#6e6e6e;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"/></g><rect y="384.20691" x="1206.3223" height="299.81326" width="299.81326" style="opacity:1;fill:#e5e5e5;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"/><circle id="led-' + i + '" r="105.35891" cy="534.11353" cx="1356.2289" style="opacity:1;fill:#f1f5f0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"/><path d="m 1476.1856,384.20312 29.9492,29.94922 0,-29.94922 -29.9492,0 z" style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"/></g></g></svg></div>';
+                        svgLedsContainer.append(svgLedElement);
+                    }
+                }
+            });
+            $("#simulate-rainbow-button").on("click", function(){
+                if(checkLedsPresence())
+                    simulateRainbow();
+            });
+            $("#set-led-color-button").on("click", function(){
+                if(checkLedsPresence())
+                    setLedColor("#set-color-value", "#set-color-index");
+            });
+            $("#set-leds-color-button").on("click", function(){
+                if(checkLedsPresence())
+                    setLedsColor("#leds-color-value", "#leds-brightness-value");
+            });
+            $("#get-led-color-button").on("click", function(){
+                if(checkLedsPresence())
+                {
+                    let ledIndex = getLedIndex("#get-color-index");
+                    if(ledIndex > -1)
+                        $("#get-color-value").val(rgbToHex(getLedColor(ledIndex)));
+                }
+            });
+        </script>
+    </body>
+</html>
