@@ -328,7 +328,7 @@
                 if(checkSendOver() && checkWebSocket())
                 {
                     let jsObjectSetMusic = {"hexRGBValue": ledColorValue, "brightness": parseInt(ledBrightnessValue)};
-                    clientWebSocket.send("set-music:" + JSON.stringify(jsObject) + ":set-music");
+                    clientWebSocket.send("set-music:" + JSON.stringify(jsObjectSetMusic) + ":set-music");
                 }
             }
             function getLedColor(ledIndex)
@@ -462,7 +462,7 @@
                         if(checkSendOver() && checkWebSocket())
                         {
                             let jsObjectGetLedColor = {"iLed": ledIndex};
-                            clientWebSocket.send("get-led-color:" + JSON.stringify(jsonObject) + ":get-led-color");
+                            clientWebSocket.send("get-led-color:" + JSON.stringify(jsObjectGetLedColor) + ":get-led-color");
                         }
                     }
                 }
@@ -486,6 +486,20 @@
                 let flowDirectionDelay = parseInt($("#flow-rainbow-delay").val());
                 if(isTaskRunning == false && (flowDirectionValue == "left" || flowDirectionValue == "right") && (typeof flowDirectionDelay !== "undefined" && flowDirectionDelay != null && flowDirectionDelay != "NaN" && flowDirectionDelay >= 0))
                 {
+                    $("#get-leds-color-button").attr("disabled", true);
+                    $("#get-leds-color-button").prop("disabled", true);
+                    $("#get-led-color-button").attr("disabled", true);
+                    $("#get-led-color-button").prop("disabled", true);
+                    $("#set-leds-color-button").attr("disabled", true);
+                    $("#set-leds-color-button").prop("disabled", true);
+                    $("#set-led-color-button").attr("disabled", true);
+                    $("#set-led-color-button").prop("disabled", true);
+                    $("#simulate-rainbow-button").attr("disabled", true);
+                    $("#simulate-rainbow-button").prop("disabled", true);
+                    $("#generate-leds-button").attr("disabled", true);
+                    $("#generate-leds-button").prop("disabled", true);
+                    $("#disconnect-button").attr("disabled", true);
+                    $("#disconnect-button").prop("disabled", true);
                     isTaskRunning = true;
                     $(this).attr("disabled", true);
                     $(this).prop("disabled", true);
@@ -493,7 +507,7 @@
                     if(checkSendOver() && checkWebSocket())
                     {
                         let jsObjectFlowRainbow = {"direction": flowDirectionValue, "delay": flowDelayValue};
-                        clientWebSocket.send("flow-rainbow:" + JSON.stringify(jsObjectSetColors) + ":flow-rainbow");
+                        clientWebSocket.send("flow-rainbow:" + JSON.stringify(jsObjectFlowRainbow) + ":flow-rainbow");
                     }
                 }
             });
@@ -503,10 +517,26 @@
                     isTaskRunning = false;
                     clearInterval(timeIntervalID);
                     timeIntervalID = null;
+                    if(checkSendOver() && checkWebSocket())
+                        clientWebSocket.send("stop-task");
                     $(this).attr("disabled", true);
                     $(this).prop("disabled", true);
                     $("#set-flow-rainbow").attr("disabled", false);
                     $("#set-flow-rainbow").prop("disabled", false);
+                    $("#get-leds-color-button").attr("disabled", false);
+                    $("#get-leds-color-button").prop("disabled", false);
+                    $("#get-led-color-button").attr("disabled", false);
+                    $("#get-led-color-button").prop("disabled", false);
+                    $("#set-leds-color-button").attr("disabled", false);
+                    $("#set-leds-color-button").prop("disabled", false);
+                    $("#set-led-color-button").attr("disabled", false);
+                    $("#set-led-color-button").prop("disabled", false);
+                    $("#simulate-rainbow-button").attr("disabled", false);
+                    $("#simulate-rainbow-button").prop("disabled", false);
+                    $("#generate-leds-button").attr("disabled", false);
+                    $("#generate-leds-button").prop("disabled", false);
+                    $("#disconnect-button").attr("disabled", false);
+                    $("#disconnect-button").prop("disabled", false);
                 }
             });
             $("#connect-button").on("click", function(){
