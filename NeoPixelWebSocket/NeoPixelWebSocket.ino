@@ -362,10 +362,9 @@ void getNeoPixelColor(int iLed){
 }
 
 void flowNeoPixelRainbow(const String& flowDirection, const int delayMs){
-    int tempColors[3];
     int previousColors[3];
     bool isFirst = true;
-    if(flowDirection == "left")
+    if(flowDirection == "right")
     {
         for (int i = 0; i < NUM_LEDS; ++i)
         {
@@ -378,18 +377,15 @@ void flowNeoPixelRainbow(const String& flowDirection, const int delayMs){
             }
             else
             {
-                tempColors[0] = leds[i].r;
-                tempColors[1] = leds[i].g;
-                tempColors[2] = leds[i].b;
                 leds[i].setRGB(previousColors[0], previousColors[1], previousColors[2]);
-                previousColors[0] = tempColors[0];
-                previousColors[1] = tempColors[1];
-                previousColors[2] = tempColors[2];
+                previousColors[0] = leds[i].r;
+                previousColors[1] = leds[i].g;
+                previousColors[2] = leds[i].b;
             }
         }
         leds[0].setRGB(previousColors[0], previousColors[1], previousColors[2]);
     }
-    else if(flowDirection == "right")
+    else if(flowDirection == "left")
     {
         for (int i = (NUM_LEDS - 1); i >= 0; --i)
         {
@@ -402,13 +398,10 @@ void flowNeoPixelRainbow(const String& flowDirection, const int delayMs){
             }
             else
             {
-                tempColors[0] = leds[i].r;
-                tempColors[1] = leds[i].g;
-                tempColors[2] = leds[i].b;
                 leds[i].setRGB(previousColors[0], previousColors[1], previousColors[2]);
-                previousColors[0] = tempColors[0];
-                previousColors[1] = tempColors[1];
-                previousColors[2] = tempColors[2];
+                previousColors[0] = leds[i].r;
+                previousColors[1] = leds[i].g;
+                previousColors[2] = leds[i].b;
             }
         }
         leds[NUM_LEDS - 1].setRGB(previousColors[0], previousColors[1], previousColors[2]);
