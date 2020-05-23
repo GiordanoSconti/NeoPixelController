@@ -156,6 +156,52 @@
             var clientWebSocket = null;
             var isWebSocketConnected = false;
             var isTaskRunning = false;
+            function checkTaskAndStop(){
+                if(localStorage.getItem("ipv4"))
+                    $("#websocket-address").val(localStorage.getItem("ipv4"));
+                if(localStorage.getItem("serverPort"))
+                    $("#websocket-port").val(parseInt(localStorage.getItem("serverPort")));
+                isTaskRunning = (localStorage.getItem("isTaskRunning") == "true" ? true : false);
+                if(!checkWebSocket() && isTaskRunning)
+                    $("#connect-button").click();
+                else if(checkWebSocket())
+                {
+                    $("#disconnect-button").click();
+                    $("#connect-button").click();
+                }
+                else
+                {
+                    $("#connect-button").attr("disabled", false);
+                    $("#connect-button").prop("disabled", false);
+                    $("#disconnect-button").prop("disabled", true);
+                    $("#disconnect-button").attr("disabled", true);
+                }
+            }
+            $(window).on("pageshow", function() {
+                checkTaskAndStop();
+            });
+            if(window.performance)
+            {
+                if(performance.navigation.type == performance.navigation.TYPE_RELOAD || performance.navigation.type == performance.navigation.TYPE_BACK_FORWARD || performance.navigation.type == performance.navigation.TYPE_NAVIGATE)
+                    checkTaskAndStop();
+            }
+            else if(window.performance.getEntriesByType("navigation")){
+                var navigationType = window.performance.getEntriesByType("navigation")[0].type;
+                if(navigationType == "reload" || navigationType == "navigate" || navigationType == "back_forward")
+                    checkTaskAndStop();
+            }
+            else if(window.onbefroeunload)
+            {
+                window.onbeforeunload = function() {
+                    checkTaskAndStop();
+                }
+            }
+            else if(window.unload)
+            {
+                window.onunload = function() {
+                    checkTaskAndStop();
+                }
+            }
             function generateScaleFunction(prevMin, prevMax, newMin, newMax) {
                 var offset = newMin - prevMin,
                     scale = (newMax - newMin) / (prevMax - prevMin);
@@ -163,7 +209,7 @@
                     return offset + scale * x;
                 };
             };
-            function RgbToHsv(r, g, b) {
+            function rgbToHsv(r, g, b) {
                 let min = Math.min(r, g, b);
                 let max = Math.max(r, g, b);
                 let delta = max - min;
@@ -181,7 +227,7 @@
                 if( h < 0 ) h += 360;
                 return { h: h, s: s, v: v }
             }
-            function HsvToRgb(h, s, v) {
+            function hsvToRgb(h, s, v) {
                 h = h / 360;
                 s = s / 100;
                 v = v / 100;
@@ -290,8 +336,8 @@
                 let red = rgbColor.split(",")[0];
                 let green = rgbColor.split(",")[1];
                 let blue = rgbColor.split(",")[2];
-                let hsv = RgbToHsv(red, green, blue);
-                let rgb = HsvToRgb(hsv.h, hsv.s, brightnessValue);
+                let hsv = rgbToHsv(red, green, blue);
+                let rgb = hsvToRgb(hsv.h, hsv.s, brightnessValue);
                 rgbColor = "rgb(" + rgb.r + "," + rgb.g + "," + rgb.b + ")";
                 svgLed.css("fill", rgbToHex(rgbColor));
             }
@@ -304,7 +350,7 @@
                     let red = rgbColor.split(",")[0];
                     let green = rgbColor.split(",")[1];
                     let blue = rgbColor.split(",")[2];
-                    let hsvColor = RgbToHsv(red, green, blue);
+                    let hsvColor = rgbToHsv(red, green, blue);
                     return hsvColor.v;
                 }
                 return 100;
@@ -373,6 +419,40 @@
                 }
                 if(checkSendOver() && checkWebSocket() && !isFlowRainbowCalled)
                     clientWebSocket.send("set-rainbow");
+            }
+            function disableControls(){
+                $("#get-leds-color-button").attr("disabled", true);
+                $("#get-leds-color-button").prop("disabled", true);
+                $("#get-led-color-button").attr("disabled", true);
+                $("#get-led-color-button").prop("disabled", true);
+                $("#set-leds-color-button").attr("disabled", true);
+                $("#set-leds-color-button").prop("disabled", true);
+                $("#set-led-color-button").attr("disabled", true);
+                $("#set-led-color-button").prop("disabled", true);
+                $("#simulate-rainbow-button").attr("disabled", true);
+                $("#simulate-rainbow-button").prop("disabled", true);
+                $("#generate-leds-button").attr("disabled", true);
+                $("#generate-leds-button").prop("disabled", true);
+                $("#disconnect-button").attr("disabled", true);
+                $("#disconnect-button").prop("disabled", true);
+            }
+            function enableControls(){
+                $("#set-flow-rainbow").attr("disabled", false);
+                $("#set-flow-rainbow").prop("disabled", false);
+                $("#get-leds-color-button").attr("disabled", false);
+                $("#get-leds-color-button").prop("disabled", false);
+                $("#get-led-color-button").attr("disabled", false);
+                $("#get-led-color-button").prop("disabled", false);
+                $("#set-leds-color-button").attr("disabled", false);
+                $("#set-leds-color-button").prop("disabled", false);
+                $("#set-led-color-button").attr("disabled", false);
+                $("#set-led-color-button").prop("disabled", false);
+                $("#simulate-rainbow-button").attr("disabled", false);
+                $("#simulate-rainbow-button").prop("disabled", false);
+                $("#generate-leds-button").attr("disabled", false);
+                $("#generate-leds-button").prop("disabled", false);
+                $("#disconnect-button").attr("disabled", false);
+                $("#disconnect-button").prop("disabled", false);
             }
             function generateFlowRainbow(flowDirection, flowDelay){
                 simulateRainbow(false);
@@ -496,23 +576,11 @@
                 let flowDelayValue = parseInt($("#flow-rainbow-delay").val());
                 if(isTaskRunning == false && (flowDirectionValue == "left" || flowDirectionValue == "right") && (typeof flowDelayValue !== "undefined" && flowDelayValue != null && flowDelayValue != "NaN" && flowDelayValue >= 0))
                 {
-                    $("#get-leds-color-button").attr("disabled", true);
-                    $("#get-leds-color-button").prop("disabled", true);
-                    $("#get-led-color-button").attr("disabled", true);
-                    $("#get-led-color-button").prop("disabled", true);
-                    $("#set-leds-color-button").attr("disabled", true);
-                    $("#set-leds-color-button").prop("disabled", true);
-                    $("#set-led-color-button").attr("disabled", true);
-                    $("#set-led-color-button").prop("disabled", true);
-                    $("#simulate-rainbow-button").attr("disabled", true);
-                    $("#simulate-rainbow-button").prop("disabled", true);
-                    $("#generate-leds-button").attr("disabled", true);
-                    $("#generate-leds-button").prop("disabled", true);
-                    $("#disconnect-button").attr("disabled", true);
-                    $("#disconnect-button").prop("disabled", true);
                     isTaskRunning = true;
                     $(this).attr("disabled", true);
                     $(this).prop("disabled", true);
+                    disableControls();
+                    localStorage.setItem("isTaskRunning", "true");
                     generateFlowRainbow(flowDirectionValue, flowDelayValue);
                     if(checkSendOver() && checkWebSocket())
                     {
@@ -527,26 +595,12 @@
                     isTaskRunning = false;
                     clearInterval(timeIntervalID);
                     timeIntervalID = null;
+                    localStorage.setItem("isTaskRunning", "false");
                     if(checkSendOver() && checkWebSocket())
                         clientWebSocket.send("stop-task");
                     $(this).attr("disabled", true);
                     $(this).prop("disabled", true);
-                    $("#set-flow-rainbow").attr("disabled", false);
-                    $("#set-flow-rainbow").prop("disabled", false);
-                    $("#get-leds-color-button").attr("disabled", false);
-                    $("#get-leds-color-button").prop("disabled", false);
-                    $("#get-led-color-button").attr("disabled", false);
-                    $("#get-led-color-button").prop("disabled", false);
-                    $("#set-leds-color-button").attr("disabled", false);
-                    $("#set-leds-color-button").prop("disabled", false);
-                    $("#set-led-color-button").attr("disabled", false);
-                    $("#set-led-color-button").prop("disabled", false);
-                    $("#simulate-rainbow-button").attr("disabled", false);
-                    $("#simulate-rainbow-button").prop("disabled", false);
-                    $("#generate-leds-button").attr("disabled", false);
-                    $("#generate-leds-button").prop("disabled", false);
-                    $("#disconnect-button").attr("disabled", false);
-                    $("#disconnect-button").prop("disabled", false);
+                    enableControls();
                 }
             });
             $("#connect-button").on("click", function(){
@@ -557,6 +611,8 @@
                     serverPort = parseInt(serverPort);
                     if(ipv4Regex.test(serverAddress) && (typeof serverPort !== "undefined" && serverPort != null && serverPort != "NaN" && serverPort >= 1 && serverPort <= 65535))
                     {
+                        localStorage.setItem("ipv4", serverAddress);
+                        localStorage.setItem("port", serverPort);
                         clientWebSocket = new WebSocket("ws://" + serverAddress + ":" + serverPort);
                         if(clientWebSocket)
                         {
@@ -564,12 +620,22 @@
                                 console.error(err);
                             };
                             clientWebSocket.onmessage = function(message){
-                                console.log(message.data);
                                 let textAreaElement = $("#messages-from-ide");
                                 textAreaElement.val(textAreaElement.val() + "\n" + message.data);
                             };
                             clientWebSocket.onopen = function(){
                                 isWebSocketConnected = true;
+                                let textAreaElement = $("#messages-from-ide");
+                                textAreaElement.val("");
+                                if(isTaskRunning)
+                                {
+                                    localStorage.setItem("isTaskRunning", "false");
+                                    isTaskRunning = false;
+                                }
+                                clientWebSocket.send("stop-task");
+                                $("#stop-task-button").attr("disabled", true);
+                                $("#stop-task-button").prop("disabled", true);
+                                enableControls();
                                 $("#connect-button").attr("disabled", true);
                                 $("#connect-button").prop("disabled", true);
                                 $("#disconnect-button").prop("disabled", false);
