@@ -151,10 +151,18 @@
             const svgLedsContainer = $(".svg-icons-container");
             const ipv4Regex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
             const numRegex = /^[0-9]{1,}$/;
+            const scaleNumber = generateScaleFunction(0, 100, 0, 255);
             var timeIntervalID = null;
             var clientWebSocket = null;
             var isWebSocketConnected = false;
             var isTaskRunning = false;
+            function generateScaleFunction(prevMin, prevMax, newMin, newMax) {
+                var offset = newMin - prevMin,
+                    scale = (newMax - newMin) / (prevMax - prevMin);
+                return function (x) {
+                    return offset + scale * x;
+                };
+            };
             function RgbToHsv(r, g, b) {
                 let min = Math.min(r, g, b);
                 let max = Math.max(r, g, b);
@@ -327,6 +335,8 @@
                 }
                 if(checkSendOver() && checkWebSocket())
                 {
+                    ledBrightnessValue = parseInt(ledBrightnessValue);
+                    ledBrightnessValue = 255 - parseInt(scaleNumber(ledBrightnessValue));
                     let jsObjectSetMusic = {"hexRGBValue": ledColorValue, "brightness": parseInt(ledBrightnessValue)};
                     clientWebSocket.send("set-music:" + JSON.stringify(jsObjectSetMusic) + ":set-music");
                 }
