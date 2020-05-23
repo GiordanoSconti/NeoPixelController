@@ -341,7 +341,7 @@
                 if(checkWebSocket())
                     clientWebSocket.send("get-led-colors");
             }
-            function simulateRainbow(){
+            function simulateRainbow(isFlowRainbowCalled){
                 for(let i = 0; i < ledsCount; ++i)
                 {
                     let svgLed = $("#led-" + i);
@@ -361,11 +361,11 @@
                             svgLed.css("fill", "#b103fc");
                     }
                 }
-                if(checkSendOver() && checkWebSocket())
+                if(checkSendOver() && checkWebSocket() && !isFlowRainbowCalled)
                     clientWebSocket.send("set-rainbow");
             }
             function generateFlowRainbow(flowDirection, flowDelay){
-                simulateRainbow();
+                simulateRainbow(false);
                 $("#stop-task-button").attr("disabled", false);
                 $("#stop-task-button").prop("disabled", false);
                 timeIntervalID = setInterval(function(){
@@ -442,7 +442,7 @@
             });
             $("#simulate-rainbow-button").on("click", function(){
                 if(checkLedsPresence())
-                    simulateRainbow();
+                    simulateRainbow(true);
             });
             $("#set-led-color-button").on("click", function(){
                 if(checkLedsPresence())
@@ -483,8 +483,8 @@
             });
             $("#set-flow-rainbow").on("click", function(){
                 let flowDirectionValue = $("#flow-rainbow-direction").val();
-                let flowDirectionDelay = parseInt($("#flow-rainbow-delay").val());
-                if(isTaskRunning == false && (flowDirectionValue == "left" || flowDirectionValue == "right") && (typeof flowDirectionDelay !== "undefined" && flowDirectionDelay != null && flowDirectionDelay != "NaN" && flowDirectionDelay >= 0))
+                let flowDelayValue = parseInt($("#flow-rainbow-delay").val());
+                if(isTaskRunning == false && (flowDirectionValue == "left" || flowDirectionValue == "right") && (typeof flowDelayValue !== "undefined" && flowDelayValue != null && flowDelayValue != "NaN" && flowDelayValue >= 0))
                 {
                     $("#get-leds-color-button").attr("disabled", true);
                     $("#get-leds-color-button").prop("disabled", true);
@@ -503,7 +503,7 @@
                     isTaskRunning = true;
                     $(this).attr("disabled", true);
                     $(this).prop("disabled", true);
-                    generateFlowRainbow(flowDirectionValue, flowDirectionDelay);
+                    generateFlowRainbow(flowDirectionValue, flowDelayValue);
                     if(checkSendOver() && checkWebSocket())
                     {
                         let jsObjectFlowRainbow = {"direction": flowDirectionValue, "delay": flowDelayValue};
