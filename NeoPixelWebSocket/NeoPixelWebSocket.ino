@@ -15,6 +15,7 @@ using namespace websockets;
 #define PATTERN_SIZE 160
 #define SERVER_PORT_NUMBER 27932
 #define DITHER_FLAG 0
+#define STARTING_COMMAND_STRINGS_SIZE 7
 
 const char *ssidName = "YOUR-NETWORK-SSID";
 const char *ssidPassword = "YOUR-NETWORK-PASSWORD";
@@ -26,7 +27,6 @@ bool isTaskRunning = false;
 bool isWebSocketReceiving = true;
 String jsonData = "";
 String jsonDataPattern = "";
-String neoPixelCommand = "";
 CRGB leds[NUM_LEDS];
 TaskHandle_t taskLoopHandle = NULL;
 TaskHandle_t taskReverseHandle = NULL;
@@ -43,8 +43,42 @@ typedef struct LedPatternType {
     int colors[4];
     int delay;
 } LedPattern;
+enum CommandType {NO_COMMAND, SET_COLORS_BRIGHTNESS, SET_COLORS, SET_MUSIC, SET_COLOR, SET_PATTERN, GET_LED_COLOR, FLOW_RAINBOW, SET_RAINBOW, GET_LED_COLORS, GET_LED_COUNT, GET_TASK_IS_RUNNING};
+CommandType neoPixelCommand = NO_COMMAND;
+String startingCommandStrings[STARTING_COMMAND_STRINGS_SIZE] = {"set-colors:", "set-colors-brightness:", "set-music:", "set-color:", "set-pattern:", "get-led-color:", "flow-rainbow:"};
 std::vector<LedPattern> ledPatterns;
 RainbowSettings rainbowSettings;
+
+boolean checkElementIn(String message) {
+    for (int i = 0; i < STARTING_COMMAND_STRINGS_SIZE; ++i) {
+        if (message.indexOf(startingCommandStrings[i]) > -1)
+            return true;
+    }
+    return false;
+}
+
+boolean trySetCommand(String message) {
+    boolean isSet = true;
+    if(message.indexOf(":set-colors-brightness") > -1)
+        neoPixelCommand = SET_COLORS_BRIGHTNESS;
+    else if(message.indexOf(":set-colors") > - 1)
+        neoPixelCommand = SET_COLORS;
+    else if(message.indexOf(":set-music") > -1)
+        neoPixelCommand = SET_MUSIC;
+    else if(message.indexOf(":set-color") > -1)
+        neoPixelCommand = SET_COLOR;
+    else if(message.indexOf(":set-pattern") > -1)
+        neoPixelCommand = SET_PATTERN;
+    else if(message.indexOf(":get-led-color") > -1)
+        neoPixelCommand = GET_LED_COLOR;
+    else if(message.indexOf(":flow-rainbow") > -1)
+        neoPixelCommand = FLOW_RAINBOW;
+    else
+        isSet = false;
+    Serial.println(String(isSet));
+    return isSet;
+    
+}
 
 void TaskReverseLedPatterns(void *parameters)
 {
@@ -234,32 +268,47 @@ void loop(void) {
     else
     {
         pollAllClients();
-        if(neoPixelCommand != "")
+        if(neoPixelCommand != NO_COMMAND)
         {
-            if(neoPixelCommand == "set-colors" || neoPixelCommand == "set-colors-brightness" || neoPixelCommand == "set-music" || neoPixelCommand == "set-color" || neoPixelCommand == "set-pattern" || neoPixelCommand == "get-led-color" || neoPixelCommand == "flow-rainbow")
+            switch(neoPixelCommand)
             {
-                if(neoPixelCommand == "set-colors-brightness")
+                case SET_COLORS_BRIGHTNESS:
                     setColors(true);
-                else if(neoPixelCommand == "set-colors")
+                    break;
+                case SET_COLORS:
                     setColors(false);
-                else if(neoPixelCommand == "set-music")
+                    break;
+                case SET_MUSIC:
                     setMusic();
-                else if(neoPixelCommand == "set-color")
+                    break;
+                case SET_COLOR:
                     setColor();
-                else if(neoPixelCommand == "set-pattern")
+                    break;
+                case SET_PATTERN:
                     setPattern();
-                else if(neoPixelCommand == "get-led-color")
+                    break;
+                case GET_LED_COLOR:
                     getColor();
-                else if(neoPixelCommand == "flow-rainbow")
+                    break;
+                case FLOW_RAINBOW:
                     setFlowRainbow();
-                jsonData = "";
-                isReceivingJson = false;
+                    break;
+                case SET_RAINBOW:
+                    setNeoPixelRainbow();
+                    break;
+                case GET_LED_COLORS:
+                    getNeoPixelColors();
+                    break;
+                case GET_LED_COUNT:
+                    allClients[0].send(String(NUM_LEDS));
+                    break;
+                case GET_TASK_IS_RUNNING:
+                    allClients[0].send((isTaskRunning ? "true" : "false"));
+                    break;
             }
-            else if(neoPixelCommand == "set-rainbow")
-                setNeoPixelRainbow();
-            else if(neoPixelCommand == "get-led-colors")
-                getNeoPixelColors();
-            neoPixelCommand = "";
+            neoPixelCommand = NO_COMMAND;
+            jsonData = "";
+            isReceivingJson = false;
         }
     }
     delayMilliseconds(50);
@@ -278,17 +327,17 @@ void setNeoPixelRGBColor(int rgbColor)
     if(rgbColor == 1)
     {
         colors[0] = 255;
-    	  setNeoPixelColorsUniform(colors);
+        setNeoPixelColorsUniform(colors);
     }
     else if(rgbColor == 2)
     {
-    	  colors[1] = 255;
-    	  setNeoPixelColorsUniform(colors);
+        colors[1] = 255;
+        setNeoPixelColorsUniform(colors);
     }
     else if(rgbColor == 3)
     {
-    	  colors[2] = 255;
-    	  setNeoPixelColorsUniform(colors);
+        colors[2] = 255;
+        setNeoPixelColorsUniform(colors);
     }
 }
 
@@ -333,9 +382,9 @@ void setNeoPixelColorsUniform(int colors[])
 
 void setNeoPixelColor(int iLed, int colors[])
 {
-	  leds[iLed].setRGB(colors[0], colors[1], colors[2]);
-	  FastLED.show();
-	  delayMilliseconds(50);
+    leds[iLed].setRGB(colors[0], colors[1], colors[2]);
+    FastLED.show();
+    delayMilliseconds(50);
 }
 
 void setNeoPixelRainbow(){
@@ -362,6 +411,7 @@ void getNeoPixelColor(int iLed){
 }
 
 void flowNeoPixelRainbow(const String& flowDirection, const int delayMs){
+    int tempColors[3];
     int previousColors[3];
     bool isFirst = true;
     if(flowDirection == "right")
@@ -377,10 +427,13 @@ void flowNeoPixelRainbow(const String& flowDirection, const int delayMs){
             }
             else
             {
+                tempColors[0] = leds[i].r;
+                tempColors[1] = leds[i].g;
+                tempColors[2] = leds[i].b;
                 leds[i].setRGB(previousColors[0], previousColors[1], previousColors[2]);
-                previousColors[0] = leds[i].r;
-                previousColors[1] = leds[i].g;
-                previousColors[2] = leds[i].b;
+                previousColors[0] = tempColors[0];
+                previousColors[1] = tempColors[1];
+                previousColors[2] = tempColors[2];
             }
         }
         leds[0].setRGB(previousColors[0], previousColors[1], previousColors[2]);
@@ -398,10 +451,13 @@ void flowNeoPixelRainbow(const String& flowDirection, const int delayMs){
             }
             else
             {
+                tempColors[0] = leds[i].r;
+                tempColors[1] = leds[i].g;
+                tempColors[2] = leds[i].b;
                 leds[i].setRGB(previousColors[0], previousColors[1], previousColors[2]);
-                previousColors[0] = leds[i].r;
-                previousColors[1] = leds[i].g;
-                previousColors[2] = leds[i].b;
+                previousColors[0] = tempColors[0];
+                previousColors[1] = tempColors[1];
+                previousColors[2] = tempColors[2];
             }
         }
         leds[NUM_LEDS - 1].setRGB(previousColors[0], previousColors[1], previousColors[2]);
@@ -425,25 +481,8 @@ void pollAllClients() {
 void onMessageCallback(WebsocketsMessage message) {
     if(isReceivingJson)
     {
-        if(neoPixelCommand != "")
-        {
-            Serial.println("Test5");
-            jsonData += message.data();
-            if(jsonData.indexOf(":set-colors-brightness") > 1)
-                neoPixelCommand = "set-colors-brightness";
-            else if(jsonData.indexOf(":set-colors") > -1)
-                neoPixelCommand = "set-colors";
-            else if(jsonData.indexOf(":set-music") > -1)
-                neoPixelCommand = "set-music";
-    		    else if(jsonData.indexOf(":set-color") > -1)
-    		        neoPixelCommand = "set-color";
-            else if(jsonData.indexOf(":set-pattern") > -1)
-                neoPixelCommand = "set-pattern";
-            else if(jsonData.indexOf(":get-led-color") > -1)
-                neoPixelCommand = "get-led-color";
-            else if(jsonData.indexOf(":flow-rainbow") > -1)
-                neoPixelCommand = "flow-rainbow";
-        }
+        jsonData += message.data();
+        trySetCommand(jsonData);
     }
     else
     {
@@ -453,32 +492,22 @@ void onMessageCallback(WebsocketsMessage message) {
                 isTaskRunning = false;
             delayMilliseconds(1000);
         }
+        else if(message.data() == "get-led-count")
+            neoPixelCommand = GET_LED_COUNT;
+        else if(message.data() == "get-task-is-running")
+            neoPixelCommand = GET_TASK_IS_RUNNING;
         else if(!isTaskRunning && isWebSocketReceiving)
         {
-              if(message.data() == "set-rainbow")
-                  neoPixelCommand = message.data();
-              else if(message.data() == "get-led-colors")
-                  neoPixelCommand = message.data();
-              else if(message.data().indexOf("set-colors:") > -1 || message.data().indexOf("set-colors-brightness:") > -1 || message.data().indexOf("set-music:") > -1 || message.data().indexOf("set-color:") > -1 || message.data().indexOf("set-pattern:") > -1 || message.data().indexOf("get-led-color:") > -1 || message.data().indexOf("flow-rainbow:") > -1)
-              {
-                  jsonData = message.data();
-                  if(jsonData.indexOf(":set-colors-brightness") > -1)
-                      neoPixelCommand = "set-colors-brightness";
-                  else if(jsonData.indexOf(":set-colors") > - 1)
-                      neoPixelCommand = "set-colors";
-                  else if(jsonData.indexOf(":set-music") > -1)
-                      neoPixelCommand = "set-music";
-                  else if(jsonData.indexOf(":set-color") > -1)
-                      neoPixelCommand = "set-color";
-                  else if(jsonData.indexOf(":set-pattern") > -1)
-                      neoPixelCommand = "set-pattern";
-                  else if(jsonData.indexOf(":get-led-color") > -1)
-                      neoPixelCommand = "get-led-color";
-                  else if(jsonData.indexOf(":flow-rainbow") > -1)
-                      neoPixelCommand = "flow-rainbow";
-                  else
-                      isReceivingJson = true;
-              }
+            if(message.data() == "set-rainbow")
+                neoPixelCommand = SET_RAINBOW;
+            else if(message.data() == "get-led-colors")
+                neoPixelCommand = GET_LED_COLORS;
+            else if(checkElementIn(message.data()))
+            {
+                jsonData = message.data();
+                if(!trySetCommand(jsonData))
+                    isReceivingJson = true;
+            }
         }
     }
 }
@@ -647,7 +676,7 @@ void setFlowRainbow() {
 
 void setColor()
 {
-	  jsonData = jsonData.substring(jsonData.indexOf("set-color:") + 10, jsonData.indexOf(":set-color"));
+  jsonData = jsonData.substring(jsonData.indexOf("set-color:") + 10, jsonData.indexOf(":set-color"));
     DynamicJsonDocument dynamicJsonDocument(61);
     DeserializationError deserializationError = deserializeJson(dynamicJsonDocument, jsonData);
     delayMilliseconds(1);
@@ -668,7 +697,7 @@ void setColor()
     colors[0] = rValue;
     colors[1] = gValue;
     colors[2] = bValue;
-	  String iLedValue = dynamicJsonDocument["iLed"];
+    String iLedValue = dynamicJsonDocument["iLed"];
     int iLed = iLedValue.toInt();
     delayMilliseconds(1);
     if(iLed >= 0 && iLed <= (NUM_LEDS-1))
