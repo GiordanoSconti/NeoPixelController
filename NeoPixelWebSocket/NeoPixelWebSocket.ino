@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include <algorithm>
 #include <vector>
+#include <cmath>
 
 using namespace websockets;
 
@@ -15,7 +16,7 @@ using namespace websockets;
 #define PATTERN_SIZE 160
 #define SERVER_PORT_NUMBER 27932
 #define DITHER_FLAG 0
-#define STARTING_COMMAND_STRINGS_SIZE 7
+#define STARTING_COMMAND_STRINGS_SIZE 10
 
 const char *ssidName = "YOUR-NETWORK-SSID";
 const char *ssidPassword = "YOUR-NETWORK-PASSWORD";
@@ -25,6 +26,7 @@ bool isReceivingJson = false;
 bool isWebSocketConnected = false;
 bool isTaskRunning = false;
 bool isWebSocketReceiving = true;
+int ledStripBrightness = BRIGHTNESS;
 String jsonData = "";
 String jsonDataPattern = "";
 CRGB leds[NUM_LEDS];
@@ -43,9 +45,19 @@ typedef struct LedPatternType {
     int colors[4];
     int delay;
 } LedPattern;
-enum CommandType {NO_COMMAND, SET_COLORS_BRIGHTNESS, SET_COLORS, SET_MUSIC, SET_COLOR, SET_PATTERN, GET_LED_COLOR, FLOW_RAINBOW, SET_RAINBOW, GET_LED_COLORS, GET_LED_COUNT, GET_TASK_IS_RUNNING};
+typedef struct HsvColorType {
+    int h;
+    int s;
+    int v;
+} HsvColor;
+typedef struct RgbColorType {
+    int r;
+    int g;
+    int b;  
+} RgbColor;
+enum CommandType {NO_COMMAND, SET_COLORS_BRIGHTNESS, SET_COLORS, SET_MUSIC, SET_COLOR, SET_PATTERN, GET_LED_COLOR, FLOW_RAINBOW, SET_RAINBOW, GET_LED_COLORS, GET_LED_COUNT, GET_TASK_IS_RUNNING, SET_BRIGHTNESS, SET_LED_BRIGHTNESS, GET_LED_BRIGHTNESS, GET_BRIGHTNESS};
 CommandType neoPixelCommand = NO_COMMAND;
-String startingCommandStrings[STARTING_COMMAND_STRINGS_SIZE] = {"set-colors:", "set-colors-brightness:", "set-music:", "set-color:", "set-pattern:", "get-led-color:", "flow-rainbow:"};
+String startingCommandStrings[STARTING_COMMAND_STRINGS_SIZE] = {"set-colors:", "set-colors-brightness:", "set-music:", "set-color:", "set-pattern:", "get-led-color:", "flow-rainbow:", "set-led-brightness:", "set-brightness:", "get-led-brightness:"};
 std::vector<LedPattern> ledPatterns;
 RainbowSettings rainbowSettings;
 
@@ -73,9 +85,14 @@ boolean trySetCommand(String message) {
         neoPixelCommand = GET_LED_COLOR;
     else if(message.indexOf(":flow-rainbow") > -1)
         neoPixelCommand = FLOW_RAINBOW;
+    else if(message.indexOf(":set-brightness") > -1)
+        neoPixelCommand = SET_BRIGHTNESS;
+    else if(message.indexOf(":set-led-brightness") > -1)
+        neoPixelCommand = SET_LED_BRIGHTNESS;
+    else if(message.indexOf(":get-led-brightness") > -1)
+        neoPixelCommand = GET_LED_BRIGHTNESS;
     else
         isSet = false;
-    Serial.println(String(isSet));
     return isSet;
     
 }
@@ -213,6 +230,34 @@ void TaskFlowColorsRainbow(void *parameters)
     vTaskDelete(taskFlowColorsRainbowHandle);
 }
 
+void rgbToHsv(const RgbColor& rgbColor, HsvColor& hsvColor)
+{
+    int maxValue = std::max(std::max(rgbColor.r, rgbColor.g), rgbColor.b);
+    if(maxValue == 0)
+    {
+        hsvColor.h = 0;
+        hsvColor.s = 0;
+        hsvColor.v = 0;
+        return;
+    }
+    int minValue = std::min(std::min(rgbColor.r, rgbColor.g), rgbColor.b);
+    int deltaValue = maxValue - minValue;
+    float hue = 0.0;
+    hsvColor.v = static_cast<int>(std::floor(maxValue / 255 * 100));
+    hsvColor.s = static_cast<int>(std::floor(deltaValue / maxValue * 100));
+    deltaValue = deltaValue == 0 ? 1 : deltaValue;
+    if(rgbColor.r == maxValue)
+        hue = (rgbColor.g - rgbColor.b) / deltaValue;
+    else if(rgbColor.g == maxValue)
+        hue = 2 + ((rgbColor.b - rgbColor.r) / deltaValue);
+    else
+        hue = 4 + ((rgbColor.r - rgbColor.g) / deltaValue);
+    hsvColor.h = static_cast<int>(std::floor(hue * 60));
+    if(hsvColor.h < 0)
+        hsvColor.h += 360;
+    return;
+}
+
 void setup (void) {
     Serial.begin(115200);
     delayMilliseconds(50);
@@ -299,11 +344,23 @@ void loop(void) {
                 case GET_LED_COLORS:
                     getNeoPixelColors();
                     break;
+                case SET_LED_BRIGHTNESS:
+                    setLedBrightness();
+                    break;
+                case SET_BRIGHTNESS:
+                    setGlobalBrightness();
+                    break;
+                case GET_LED_BRIGHTNESS:
+                    getLedBrightness();
+                    break;
+                case GET_BRIGHTNESS:
+                    allClients[0].send("{\"data\":" + String(ledStripBrightness) + "}");
+                    break;
                 case GET_LED_COUNT:
-                    allClients[0].send(String(NUM_LEDS));
+                    allClients[0].send("{\"data\":" + String(NUM_LEDS) + "}");
                     break;
                 case GET_TASK_IS_RUNNING:
-                    allClients[0].send((isTaskRunning ? "true" : "false"));
+                    allClients[0].send("{\"data\":" + (isTaskRunning ? String("true") : String("false")) + "}");
                     break;
             }
             neoPixelCommand = NO_COMMAND;
@@ -385,6 +442,29 @@ void setNeoPixelColor(int iLed, int colors[])
     leds[iLed].setRGB(colors[0], colors[1], colors[2]);
     FastLED.show();
     delayMilliseconds(50);
+}
+
+void setNeoPixelBrightness(int iLed, int brightnessValue)
+{
+    HsvColor hsvColor;
+    RgbColor rgbColor;
+    rgbColor.r = leds[iLed].r;
+    rgbColor.g = leds[iLed].g;
+    rgbColor.b = leds[iLed].b;
+    rgbToHsv(rgbColor, hsvColor);
+    leds[iLed] = CHSV(hsvColor.h, hsvColor.s, brightnessValue);
+    FastLED.show();
+    delayMilliseconds(50);
+}
+
+void getNeoPixelBrightness(int iLed){
+    HsvColor hsvColor;
+    RgbColor rgbColor;
+    rgbColor.r = leds[iLed].r;
+    rgbColor.g = leds[iLed].g;
+    rgbColor.b = leds[iLed].b;
+    rgbToHsv(rgbColor, hsvColor);
+    allClients[0].send("{\"data\":" + String(hsvColor.v) + "}");
 }
 
 void setNeoPixelRainbow(){
@@ -496,6 +576,8 @@ void onMessageCallback(WebsocketsMessage message) {
             neoPixelCommand = GET_LED_COUNT;
         else if(message.data() == "get-task-is-running")
             neoPixelCommand = GET_TASK_IS_RUNNING;
+        else if(message.data() == "get-brightness")
+            neoPixelCommand = GET_BRIGHTNESS;
         else if(!isTaskRunning && isWebSocketReceiving)
         {
             if(message.data() == "set-rainbow")
@@ -676,7 +758,7 @@ void setFlowRainbow() {
 
 void setColor()
 {
-  jsonData = jsonData.substring(jsonData.indexOf("set-color:") + 10, jsonData.indexOf(":set-color"));
+    jsonData = jsonData.substring(jsonData.indexOf("set-color:") + 10, jsonData.indexOf(":set-color"));
     DynamicJsonDocument dynamicJsonDocument(61);
     DeserializationError deserializationError = deserializeJson(dynamicJsonDocument, jsonData);
     delayMilliseconds(1);
@@ -702,6 +784,68 @@ void setColor()
     delayMilliseconds(1);
     if(iLed >= 0 && iLed <= (NUM_LEDS-1))
         setNeoPixelColor(iLed, colors);
+}
+
+void setLedBrightness()
+{
+    jsonData = jsonData.substring(jsonData.indexOf("set-led-brightness:") + 19, jsonData.indexOf(":set-led-brightness"));
+    DynamicJsonDocument dynamicJsonDocument(52);
+    DeserializationError deserializationError = deserializeJson(dynamicJsonDocument, jsonData);
+    delayMilliseconds(1);
+    if (deserializationError) {
+        Serial.print("deserializeJson() failed: ");
+        Serial.println(deserializationError.c_str());
+        Serial.println(jsonData);
+        return;
+    }
+    delayMilliseconds(1);
+    int brightnessValue = dynamicJsonDocument["brightness"];
+    String iLedValue = dynamicJsonDocument["iLed"];
+    int iLed = iLedValue.toInt();
+    delayMilliseconds(1);
+    if((iLed >= 0 && iLed <= (NUM_LEDS-1)) && (brightnessValue >= 0 && brightnessValue <= ledStripBrightness))
+        setNeoPixelBrightness(iLed, brightnessValue);
+}
+
+void getLedBrightness()
+{
+    jsonData = jsonData.substring(jsonData.indexOf("get-led-brightness:") + 19, jsonData.indexOf(":get-led-brightness"));
+    DynamicJsonDocument dynamicJsonDocument(25);
+    DeserializationError deserializationError = deserializeJson(dynamicJsonDocument, jsonData);
+    delayMilliseconds(1);
+    if (deserializationError) {
+        Serial.print("deserializeJson() failed: ");
+        Serial.println(deserializationError.c_str());
+        Serial.println(jsonData);
+        return;
+    }
+    delayMilliseconds(1);
+    String iLedValue = dynamicJsonDocument["iLed"];
+    int iLed = iLedValue.toInt();
+    delayMilliseconds(1);
+    if(iLed >= 0 && iLed <= (NUM_LEDS-1))
+        getNeoPixelBrightness(iLed);
+}
+
+void setGlobalBrightness()
+{
+    jsonData = jsonData.substring(jsonData.indexOf("set-brightness:") + 14, jsonData.indexOf(":set-brightness"));
+    DynamicJsonDocument dynamicJsonDocument(27);
+    DeserializationError deserializationError = deserializeJson(dynamicJsonDocument, jsonData);
+    delayMilliseconds(1);
+    if (deserializationError) {
+        Serial.print("deserializeJson() failed: ");
+        Serial.println(deserializationError.c_str());
+        Serial.println(jsonData);
+        return;
+    }
+    delayMilliseconds(1);
+    int brightnessValue = dynamicJsonDocument["brightness"];
+    if(brightnessValue >= 0 && brightnessValue <= 255)
+    {
+        ledStripBrightness = brightnessValue;
+        FastLED.setBrightness(brightnessValue);
+    }
 }
 
 void setColors(bool isSetColorsBrightness)
