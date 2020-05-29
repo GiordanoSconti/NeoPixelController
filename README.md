@@ -130,7 +130,7 @@ This command can be used to set all the leds with different colors. You must set
 Javascript Object Parameters:
 | Name                                                                                        | Description                                                                 | Possible Values                                                                          |
 | --------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
-| iLed ; where iLed is a number between 0 and NUM_LEDS - 1 (both included) in string format   | This is the color the single led will be set to.                            | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
+| iLed ; where iLed is a number between 0 and NUM_LEDS - 1 (both included) in string format   | This is the color the led will be set to.                            | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
 
 * ### Flow-Rainbow Command:
 ```javascript
