@@ -178,7 +178,7 @@ By changing "#define BRIGHTNESS_FADE_BY" value you can move the offset of fadeTo
 * ssidPassword = Password of your Network.
 * #define NEO_PIN = DOUT PIN of the LED Strip.
 * #define NUM_LEDS = Number of leds the strip is composed of.
-* #define BRIGHTNESS = Brightness of the all leds.
+* #define BRIGHTNESS = Brightness of all the leds.
 * #define BRIGHTNESS_FADE_BY = Offset for fadeToBlackBy method.
 * #define SERVER_PORT_NUMBER = WebSocket Server port on which the server listens.
 * #define DITHER_FLAG = Temporal Dithering flag.
