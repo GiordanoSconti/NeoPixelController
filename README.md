@@ -173,7 +173,7 @@ LedParameters:
 # Brightness Management:
 By changing "#define BRIGHTNESS_FADE_BY" value you can move the offset of fadeToBlackBy, which is 0 by default. When you need to change the brightness of the leds you have to keep in mind this one. If you want full control over the brightness, you need to set "#define BRIGHTNESS" to 255 and "#define BRIGHTNESS_FADE_BY" to 0 in order to set "brightness" parameter freely. Keep in mind that by doing this you set the global brightness at full. By the way, you have to change even the power settings because by default the power is limited at 5W (5V, 1A).
 
-# Important Settings:
+# Main Settings:
 * ssidName = Name of your Network.
 * ssidPassword = Password of your Network.
 * #define NEO_PIN = DOUT PIN of the LED Strip.
