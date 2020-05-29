@@ -63,21 +63,21 @@ let jsObjectFlowColors = {
 };
 WebSocket.send("set-pattern:" + JSON.stringify(jsObjectFlowColors) + ":set-pattern");
 ```
-This command can be used to program in real time the LED Strip.
+This command can be used to program the LED Strip in real time.
 
-There are four modes, each with a different goal:
+There are four modes, each one with a different goal:
 
 #### Once:
 It is used to execute only once in a row all the commands contained in the "leds" parameter.
 
 #### Loop:
-It is used to execute all the commands contained in the "leds" parameter in an infinite loop, in clockwise order.
+It is used to execute all the commands contained in the "leds" parameter inside an infinite loop, in clockwise order.
 
 #### Reverse:
-It is used to execute all the commands contained in the "leds" parameter in an infinite loop, in counterclockwise order.
+It is used to execute all the commands contained in the "leds" parameter inside an infinite loop, in counterclockwise order.
 
 #### Flow-colors:
-It is used to execute all the commands contained in the "leds" parameter in an infinite loop, but the elements the "leds" parameter is composed of are made scrolling at every cycle.
+It is used to execute all the commands contained in the "leds" parameter inside an infinite loop, but the elements the "leds" parameter is composed of are made scrolling at every cycle.
 
 Javascript Object Parameters:
 | Name          | Description                                             | Possible Values                                   |
