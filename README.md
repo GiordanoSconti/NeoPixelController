@@ -44,17 +44,17 @@ No parameters are needed.
 ```javascript
 let jsObjectOnce = {
     "mode": "once",
-	"leds": [{"id": "all", "start-id": "0", "end-id": "0","color": "#ffffff", "brightness": 64, "delay": 0}]
+    "leds": [{"id": "all", "start-id": "0", "end-id": "0","color": "#ffffff", "brightness": 64, "delay": 0}]
 };
 WebSocket.send("set-pattern:" + JSON.stringify(jsObjectOnce) + ":set-pattern");
 let jsObjectLoop = {
     "mode": "loop",
-	"leds": [{"id": "all", "start-id": "0", "end-id": "0", "color": "#ff0000", "brightness": 64, "delay": 500}, {"id": "all", "start-id": "0", "end-id": "0", "color": "#000000", "brightness": 64, "delay": 500}]
+    "leds": [{"id": "all", "start-id": "0", "end-id": "0", "color": "#ff0000", "brightness": 64, "delay": 500}, {"id": "all", "start-id": "0", "end-id": "0", "color": "#000000", "brightness": 64, "delay": 500}]
 };
 WebSocket.send("set-pattern:" + JSON.stringify(jsObjectLoop) + ":set-pattern");
 let jsObjectReverse = {
     "mode": "reverse",
-	"leds": [{"id": "all", "start-id": "0", "end-id": "0", "color": "#ff0000", "brightness": 64, "delay": 500}, {"id": "all", "start-id": "0", "end-id": "0", "color": "#000000", "brightness": 64, "delay": 500}]
+    "leds": [{"id": "all", "start-id": "0", "end-id": "0", "color": "#ff0000", "brightness": 64, "delay": 500}, {"id": "all", "start-id": "0", "end-id": "0", "color": "#000000", "brightness": 64, "delay": 500}]
 };
 WebSocket.send("set-pattern:" + JSON.stringify(jsObjectReverse) + ":set-pattern");
 let jsObjectFlowColors = {
