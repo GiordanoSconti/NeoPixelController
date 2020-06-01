@@ -862,7 +862,7 @@ void getLedBrightness()
 
 void setGlobalBrightness()
 {
-    jsonData = jsonData.substring(jsonData.indexOf("set-brightness:") + 14, jsonData.indexOf(":set-brightness"));
+    jsonData = jsonData.substring(jsonData.indexOf("set-brightness:") + 15, jsonData.indexOf(":set-brightness"));
     DynamicJsonDocument dynamicJsonDocument(27);
     DeserializationError deserializationError = deserializeJson(dynamicJsonDocument, jsonData);
     delayMilliseconds(1);
