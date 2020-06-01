@@ -44,17 +44,17 @@ No parameters are needed.
 ```javascript
 let jsObjectOnce = {
     "mode": "once",
-	"leds": [{"id": "all", "start-id": "0", "end-id": "0","color": "#ffffff", "brightness": 64, "delay": 0}]
+    "leds": [{"id": "all", "start-id": "0", "end-id": "0","color": "#ffffff", "brightness": 64, "delay": 0}]
 };
 WebSocket.send("set-pattern:" + JSON.stringify(jsObjectOnce) + ":set-pattern");
 let jsObjectLoop = {
     "mode": "loop",
-	"leds": [{"id": "all", "start-id": "0", "end-id": "0", "color": "#ff0000", "brightness": 64, "delay": 500}, {"id": "all", "start-id": "0", "end-id": "0", "color": "#000000", "brightness": 64, "delay": 500}]
+    "leds": [{"id": "all", "start-id": "0", "end-id": "0", "color": "#ff0000", "brightness": 64, "delay": 500}, {"id": "all", "start-id": "0", "end-id": "0", "color": "#000000", "brightness": 64, "delay": 500}]
 };
 WebSocket.send("set-pattern:" + JSON.stringify(jsObjectLoop) + ":set-pattern");
 let jsObjectReverse = {
     "mode": "reverse",
-	"leds": [{"id": "all", "start-id": "0", "end-id": "0", "color": "#ff0000", "brightness": 64, "delay": 500}, {"id": "all", "start-id": "0", "end-id": "0", "color": "#000000", "brightness": 64, "delay": 500}]
+    "leds": [{"id": "all", "start-id": "0", "end-id": "0", "color": "#ff0000", "brightness": 64, "delay": 500}, {"id": "all", "start-id": "0", "end-id": "0", "color": "#000000", "brightness": 64, "delay": 500}]
 };
 WebSocket.send("set-pattern:" + JSON.stringify(jsObjectReverse) + ":set-pattern");
 let jsObjectFlowColors = {
@@ -63,21 +63,21 @@ let jsObjectFlowColors = {
 };
 WebSocket.send("set-pattern:" + JSON.stringify(jsObjectFlowColors) + ":set-pattern");
 ```
-This command can be used to program in real time the LED Strip.
+This command can be used to program the LED Strip in real time.
 
-There are four modes, each with a different goal:
+There are four modes, each one with a different goal:
 
 #### Once:
 It is used to execute only once in a row all the commands contained in the "leds" parameter.
 
 #### Loop:
-It is used to execute all the commands contained in the "leds" parameter in an infinite loop, in clockwise order.
+It is used to execute all the commands contained in the "leds" parameter inside an infinite loop, in clockwise order.
 
 #### Reverse:
-It is used to execute all the commands contained in the "leds" parameter in an infinite loop, in counterclockwise order.
+It is used to execute all the commands contained in the "leds" parameter inside an infinite loop, in counterclockwise order.
 
 #### Flow-colors:
-It is used to execute all the commands contained in the "leds" parameter in an infinite loop, but the elements the "leds" parameter is composed of are made scrolling at every cycle.
+It is used to execute all the commands contained in the "leds" parameter inside an infinite loop, but the elements the "leds" parameter is composed of are made scrolling at every cycle.
 
 Javascript Object Parameters:
 | Name          | Description                                             | Possible Values                                   |
@@ -130,7 +130,7 @@ This command can be used to set all the leds with different colors. You must set
 Javascript Object Parameters:
 | Name                                                                                        | Description                                                                 | Possible Values                                                                          |
 | --------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
-| iLed ; where iLed is a number between 0 and NUM_LEDS - 1 (both included) in string format   | This is the color the single led will be set to.                            | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
+| iLed ; where iLed is a number between 0 and NUM_LEDS - 1 (both included) in string format   | This is the color the led will be set to.                            | hexadecimal string: "#rrggbb" ; where rr = Red Value, gg = Green Value, bb = Blue Value  |
 
 * ### Flow-Rainbow Command:
 ```javascript
@@ -173,12 +173,12 @@ LedParameters:
 # Brightness Management:
 By changing "#define BRIGHTNESS_FADE_BY" value you can move the offset of fadeToBlackBy, which is 0 by default. When you need to change the brightness of the leds you have to keep in mind this one. If you want full control over the brightness, you need to set "#define BRIGHTNESS" to 255 and "#define BRIGHTNESS_FADE_BY" to 0 in order to set "brightness" parameter freely. Keep in mind that by doing this you set the global brightness at full. By the way, you have to change even the power settings because by default the power is limited at 5W (5V, 1A).
 
-# Important Settings:
+# Main Settings:
 * ssidName = Name of your Network.
 * ssidPassword = Password of your Network.
 * #define NEO_PIN = DOUT PIN of the LED Strip.
 * #define NUM_LEDS = Number of leds the strip is composed of.
-* #define BRIGHTNESS = Brightness of the all leds.
+* #define BRIGHTNESS = Brightness of all the leds.
 * #define BRIGHTNESS_FADE_BY = Offset for fadeToBlackBy method.
-* #define SERVER_PORT_NUMBER = WebSocket Server port on which the server listens.
+* #define SERVER_PORT_NUMBER = WebSocket Port on which the server listens.
 * #define DITHER_FLAG = Temporal Dithering flag.
