@@ -24,6 +24,7 @@ WebsocketsServer webSocketServer;
 std::vector<WebsocketsClient> allClients;
 bool isReceivingJson = false;
 bool isWebSocketConnected = false;
+bool isDebugEnabled = true;
 bool isTaskRunning = false;
 bool isWebSocketReceiving = true;
 int ledStripBrightness = BRIGHTNESS;
@@ -302,6 +303,8 @@ void loop(void) {
             allClients.erase(allClients.begin(), allClients.end());
             delayMilliseconds(50);
             WebsocketsClient webSocketClient = webSocketServer.accept();
+            Serial.println("Client Connected!");
+            webSocketClient.send("{\"status\":{\"command\":\"connect\",\"data\":\"connected\"}}");
             delayMilliseconds(50);
             webSocketClient.onMessage(onMessageCallback);
             webSocketClient.onEvent(onEventsCallback);
@@ -406,6 +409,10 @@ void setNeoPixelColors(int colors[][4], bool isSetColorsBrightness, int startId,
     }
     FastLED.show();
     delayMilliseconds(50);
+    if(isSetColorsBrightness)
+        allClients[0].send("{\"status\":{\"command\":\"set-colors-brightness\",\"data\":\"colors-brightness-set\"}}");
+    else
+        allClients[0].send("{\"status\":{\"command\":\"set-colors\",\"data\":\"colors-set\"}}");
 }
 
 void setNeoPixelMusic(int colors[])
@@ -416,6 +423,7 @@ void setNeoPixelMusic(int colors[])
     }
     FastLED.show();
     delayMilliseconds(50);
+    allClients[0].send("{\"status\":{\"command\":\"set-music\",\"data\":\"task-started\"}}");
 }
 
 void setNeoPixelRangeColors(int colors[], int startId, int endId)
@@ -442,6 +450,7 @@ void setNeoPixelColor(int iLed, int colors[])
     leds[iLed].setRGB(colors[0], colors[1], colors[2]);
     FastLED.show();
     delayMilliseconds(50);
+    allClients[0].send("{\"status\":{\"command\":\"set-color\",\"data\":\"led-color-set\"}}");
 }
 
 void setNeoPixelBrightness(int iLed, int brightnessValue)
@@ -455,6 +464,7 @@ void setNeoPixelBrightness(int iLed, int brightnessValue)
     leds[iLed] = CHSV(hsvColor.h, hsvColor.s, brightnessValue);
     FastLED.show();
     delayMilliseconds(50);
+    allClients[0].send("{\"status\":{\"command\":\"set-led-brightness\",\"data\":\"led-brightness-set\"}}");
 }
 
 void getNeoPixelBrightness(int iLed){
@@ -464,7 +474,8 @@ void getNeoPixelBrightness(int iLed){
     rgbColor.g = leds[iLed].g;
     rgbColor.b = leds[iLed].b;
     rgbToHsv(rgbColor, hsvColor);
-    allClients[0].send("{\"data\":" + String(hsvColor.v) + "}");
+    if(!isTaskRunning)
+      allClients[0].send("{\"data\":" + String(hsvColor.v) + "}");
 }
 
 void setNeoPixelRainbow(){
@@ -472,6 +483,8 @@ void setNeoPixelRainbow(){
     fadeToBlackBy(leds, NUM_LEDS, BRIGHTNESS_FADE_BY);
     FastLED.show();
     delayMilliseconds(50);
+    if(!isTaskRunning)
+      allClients[0].send("{\"status\":{\"command\":\"set-rainbow\",\"data\":\"rainbow-set\"}}");
 }
 
 void getNeoPixelColors(){
@@ -482,12 +495,14 @@ void getNeoPixelColors(){
         else
             jsonData += "{\"red\":" + String(leds[i].r) + ",\"green\":" + String(leds[i].g) + ",\"blue\":" + String(leds[i].b) + "}]}";
     }
-    allClients[0].send(jsonData);
+    if(!isTaskRunning)
+      allClients[0].send(jsonData);
 }
 
 void getNeoPixelColor(int iLed){
     String jsonData = "{\"red\":" + String(leds[iLed].r) + ",\"green\":" + String(leds[iLed].g) + ",\"blue\":" + String(leds[iLed].b) + "}";
-    allClients[0].send(jsonData);
+    if(!isTaskRunning)
+      allClients[0].send(jsonData);
 }
 
 void flowNeoPixelRainbow(const String& flowDirection, const int delayMs){
@@ -559,6 +574,8 @@ void pollAllClients() {
 }
 
 void onMessageCallback(WebsocketsMessage message) {
+    if(isDebugEnabled)
+      Serial.println(message.data());
     if(isReceivingJson)
     {
         jsonData += message.data();
@@ -572,6 +589,10 @@ void onMessageCallback(WebsocketsMessage message) {
                 isTaskRunning = false;
             delayMilliseconds(1000);
         }
+        else if(message.data() == "enable-debug")
+            isDebugEnabled = true;
+        else if(message.data() == "disable-debug")
+            isDebugEnabled = false;
         else if(message.data() == "get-led-count")
             neoPixelCommand = GET_LED_COUNT;
         else if(message.data() == "get-task-is-running")
@@ -665,6 +686,8 @@ void setPattern()
         if(isFirstPattern)
             isFirstPattern = false;
     } while(jsonData.indexOf(",") > -1);
+    allClients[0].send("{\"status\":{\"command\":\"set-pattern\",\"data\":\"task-started\"}}");
+    delayMilliseconds(500);
     if(patternMode == "reverse")
     {
         xTaskCreatePinnedToCore(
@@ -743,6 +766,8 @@ void setFlowRainbow() {
     String directionValue = dynamicJsonDocument["direction"];
     rainbowSettings.direction = directionValue;
     delayMilliseconds(1);
+    allClients[0].send("{\"status\":{\"command\":\"flow-rainbow\",\"data\":\"task-started\"}}");
+    delayMilliseconds(500);
     xTaskCreatePinnedToCore(
         TaskFlowColorsRainbow,                  /* pvTaskCode (Task Function Code Reference) */
         "TaskFlowColorsRainbow",            /* pcName (Task Name) */
@@ -784,6 +809,8 @@ void setColor()
     delayMilliseconds(1);
     if(iLed >= 0 && iLed <= (NUM_LEDS-1))
         setNeoPixelColor(iLed, colors);
+    else
+        allClients[0].send("{\"status\":{\"command\":\"set-color\",\"data\":\"index-out-of-range\"}}");
 }
 
 void setLedBrightness()
@@ -805,6 +832,10 @@ void setLedBrightness()
     delayMilliseconds(1);
     if((iLed >= 0 && iLed <= (NUM_LEDS-1)) && (brightnessValue >= 0 && brightnessValue <= ledStripBrightness))
         setNeoPixelBrightness(iLed, brightnessValue);
+    else if(brightnessValue >= 0 && brightnessValue <= ledStripBrightness)
+        allClients[0].send("{\"status\":{\"command\":\"set-led-brightness\" ,\"data\":\"brightness-out-of-range\"}}");
+    else if(iLed >= 0 && iLed <= (NUM_LEDS-1))
+        allClients[0].send("{\"status\":{\"command\":\"set-led-brightness\",\"data\":\"index-out-of-range\"}}");
 }
 
 void getLedBrightness()
@@ -825,6 +856,8 @@ void getLedBrightness()
     delayMilliseconds(1);
     if(iLed >= 0 && iLed <= (NUM_LEDS-1))
         getNeoPixelBrightness(iLed);
+    else
+        allClients[0].send("{\"status\":{\"command\":\"get-led-brightness\",\"data\":\"index-out-of-range\"}}");
 }
 
 void setGlobalBrightness()
@@ -845,6 +878,7 @@ void setGlobalBrightness()
     {
         ledStripBrightness = brightnessValue;
         FastLED.setBrightness(brightnessValue);
+        allClients[0].send("{\"status\":{\"command\":\"set-brightness\",\"data\":\"global-brightness-set\"}}");
     }
 }
 
@@ -926,6 +960,8 @@ void getColor(){
     delayMilliseconds(1);
     if(iLed >= 0 && iLed <= (NUM_LEDS-1))
         getNeoPixelColor(iLed);
+    else
+        allClients[0].send("{\"status\":{\"command\":\"get-led-color\",\"data\":\"index-out-of-range\"}}");
 }
 
 void onEventsCallback(WebsocketsEvent event, String data) {
