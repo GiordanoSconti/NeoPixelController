@@ -12,8 +12,7 @@ class FlowRainbow {
   final String direction;
   FlowRainbow({this.delay, this.direction});
   FlowRainbow.fromJson(Map<String, dynamic> json): delay = json['delay'], direction = json['direction'];
-  Map<String, dynamic> toJson() =>
-  {
+  Map<String, dynamic> toJson() => {
     'delay': delay,
     'direction': direction,
   };
@@ -24,12 +23,8 @@ class WebSocketStatusMessage {
   final String data;
   WebSocketStatusMessage({this.command, this.data});
   WebSocketStatusMessage.fromJson(Map<String, dynamic> json): command = json['status']['command'], data = json['status']['data'];
-  Map<String, dynamic> toJson() =>
-  {
-    'status': {
-      'command': command,
-      'data': data
-    }
+  Map<String, dynamic> toJson() => {
+    'status': {'command': command, 'data': data}
   };
 }
 
@@ -39,18 +34,14 @@ class MyApp extends StatelessWidget {
     final title = 'WS2812B LED Strip Controller';
     return MaterialApp(
       title: title,
-      home: MyHomePage(
-        title: title
-      ),
+      home: MyHomePage(title: title),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   final String title;
-  MyHomePage({Key key, @required this.title})
-      : super(key: key);
-
+  MyHomePage({Key key, @required this.title}) : super(key: key);
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -75,87 +66,134 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: const EdgeInsets.all(20.0),
           children: <Widget>[
             Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    TextField(
-                      controller: _socketAddressController,
-                      decoration: InputDecoration(labelText: 'Type the remote address'),
-                    ),
-                    TextField(
-                      controller: _socketPortController,
-                      decoration: InputDecoration(labelText: 'Type the remote port')
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      child: RaisedButton(
-                        child: Text('CONNECT'),
-                        onPressed: _isWebSocketClosed() ? () => _openWebSocket(context) : null,
+                Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.all(5),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            TextField(
+                              controller: _socketAddressController,
+                              decoration: InputDecoration(
+                                labelText: 'Type the remote address',
+                                prefixIcon: Icon(Icons.computer),
+                              ),
+                            ),
+                            TextField(
+                              controller: _socketPortController,
+                              decoration: InputDecoration(
+                                labelText: 'Type the remote port',
+                                prefixIcon: Icon(Icons.power),
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Container(
+                                  child: RaisedButton(
+                                    child: Text('CONNECT'),
+                                    onPressed: _isWebSocketClosed() ? () => _openWebSocket(context) : null,
+                                  ),
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(left: 8.0),
+                                  child: RaisedButton(
+                                    child: Text('CLOSE'),
+                                    onPressed: _isWebSocketClosed() ? null : () => _closeWebSocket(context),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(left: 8.0),
-                      child: RaisedButton(
-                        child: Text('CLOSE'),
-                        onPressed: _isWebSocketClosed() ? null : () => _closeWebSocket(context),
+                    ],
+                  ),
+                ),
+                Card(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.all(5),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[ 
+                            TextField(
+                              controller: _messageController,
+                              decoration: InputDecoration(
+                                labelText: 'Send a message',
+                                prefixIcon: Icon(Icons.send),
+                              ),
+                            ),
+                            RaisedButton(
+                              child: Text('SEND'),
+                              onPressed: _isWebSocketClosed() ? null : () => _sendMessage(context),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    TextField(
-                      controller: _messageController,
-                      decoration: InputDecoration(labelText: 'Send a message'),
-                    ),
-                  ],
-                ),
-                Container(
-                  child: RaisedButton(
-                    child: Text('SEND'),
-                    onPressed: _isWebSocketClosed() ? null : () => _sendMessage(context),
-                  )
-                ),
-                FlowRainbowDirectionSelector(key: frdStateKey, showInSnackBar: (String message, BuildContext context) {
-                  Scaffold.of(context).hideCurrentSnackBar();
-                  Scaffold.of(context).showSnackBar(
-                    SnackBar(
-                      duration: Duration(milliseconds: 1500),
-                      content: Text(
-                        'INFO: Direction Selected -> $message'
+                Card(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.all(5),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            FlowRainbowDirectionSelector(
+                              key: frdStateKey,
+                              showInSnackBar: (String message, BuildContext context) {
+                                Scaffold.of(context).hideCurrentSnackBar();
+                                Scaffold.of(context).showSnackBar(
+                                  SnackBar(
+                                    duration: Duration(milliseconds: 1500),
+                                    content: Text(
+                                        'INFO: Direction Selected -> $message'),
+                                  ),
+                                );
+                              }
+                            ),
+                            TextField(
+                              controller: _flowRainbowDelayController,
+                              decoration: InputDecoration(
+                                labelText: 'Delay:',
+                                prefixIcon: Icon(Icons.access_time),
+                              ),
+                            ),
+                            RaisedButton(
+                              child: Text('START FLOW RAINBOW'),
+                              onPressed: _isWebSocketClosed() || _isTaskRunning ? null : () => _startFlowRainbow(context),
+                            ),
+                            RaisedButton(
+                              child: Text('STOP FLOW RAINBOW'),
+                              onPressed: !_isWebSocketClosed() && _isTaskRunning ? () => _stopTask(context) : null,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    TextField(
-                      controller: _flowRainbowDelayController, 
-                      decoration: InputDecoration(labelText: 'Delay:'),
-                    ),
-                    RaisedButton(
-                      child: Text('START FLOW RAINBOW'),
-                      onPressed: _isWebSocketClosed() || _isTaskRunning ? null : () => _startFlowRainbow(context),
-                    ),
-                    RaisedButton(
-                      child: Text('STOP FLOW RAINBOW'),
-                      onPressed: !_isWebSocketClosed() && _isTaskRunning ? () => _stopTask(context) : null,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                CustomSlider(sliderLabel: "Brightness", minValue: 0, maxValue: 100),
+                CustomSlider(
+                  sliderLabel: "Brightness", minValue: 0, maxValue: 100),
               ],
             ),
           ],
@@ -164,67 +202,57 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _stopTask(BuildContext context){
-    if(_webSocket != null && _isWebSocketConnected){
+  void _stopTask(BuildContext context) {
+    if (_webSocket != null && _isWebSocketConnected) {
       Scaffold.of(context).hideCurrentSnackBar();
       Scaffold.of(context).showSnackBar(
         SnackBar(
           duration: Duration(milliseconds: 1500),
-          content: Text(
-            'INFO: Stopping running Task!'
-          ),
+          content: Text('INFO: Stopping running Task!'),
         ),
       );
       _webSocket.send("stop-task");
-      setState((){
+      setState(() {
         _isTaskRunning = false;
       });
     }
   }
 
-  void _startFlowRainbow(BuildContext context){
-      final String direction = frdStateKey.currentState.flowDirectionString;
-      if(_flowRainbowDelayController.text.isNotEmpty && _webSocket != null && _isWebSocketConnected)
-      {
-        final int delay = int.parse(_flowRainbowDelayController.text);
-        FlowRainbow flowRainbow = FlowRainbow(direction: direction, delay: delay);
-        setState((){
-          _isTaskRunning = true;
-        });
-        _webSocket.send("flow-rainbow:" + jsonEncode(flowRainbow) + ":flow-rainbow");
-        Scaffold.of(context).hideCurrentSnackBar();
-        Scaffold.of(context).showSnackBar(
-          SnackBar(
-            duration: Duration(milliseconds: 1500),
-            content: Text(
-              'INFO: Flow Rainbow Started!'
-            ),
-          ),
-        );
-      } else {
-        Scaffold.of(context).hideCurrentSnackBar();
-        Scaffold.of(context).showSnackBar(
-          SnackBar(
-            duration: Duration(milliseconds: 1500),
-            content: Text(
-              'WARNING: Delay is empty or WebSocket is not connected!'
-            ),
-          ),
-        );
-      }
+  void _startFlowRainbow(BuildContext context) {
+    final String direction = frdStateKey.currentState.flowDirectionString;
+    if (_flowRainbowDelayController.text.isNotEmpty && _webSocket != null && _isWebSocketConnected) {
+      final int delay = int.parse(_flowRainbowDelayController.text);
+      FlowRainbow flowRainbow = FlowRainbow(direction: direction, delay: delay);
+      setState(() {
+        _isTaskRunning = true;
+      });
+      _webSocket.send("flow-rainbow:" + jsonEncode(flowRainbow) + ":flow-rainbow");
+      Scaffold.of(context).hideCurrentSnackBar();
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          duration: Duration(milliseconds: 1500),
+          content: Text('INFO: Flow Rainbow Started!'),
+        ),
+      );
+    } else {
+      Scaffold.of(context).hideCurrentSnackBar();
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          duration: Duration(milliseconds: 1500),
+          content: Text('WARNING: Delay is empty or WebSocket is not connected!'),
+        ),
+      );
+    }
   }
 
-  void _openWebSocket(BuildContext context){
+  void _openWebSocket(BuildContext context) {
     if (_webSocket == null && !_isWebSocketConnected) {
-      if(_socketAddressController.text.isNotEmpty && _socketPortController.text.isNotEmpty)
-      {
+      if (_socketAddressController.text.isNotEmpty && _socketPortController.text.isNotEmpty) {
         Scaffold.of(context).hideCurrentSnackBar();
         Scaffold.of(context).showSnackBar(
           SnackBar(
             duration: Duration(milliseconds: 1500),
-            content: Text(
-              'INFO: WebSocket is connecting to "ws://${_socketAddressController.text.trim()}:${_socketPortController.text.trim()}"!'
-            ),
+            content: Text('INFO: WebSocket is connecting to "ws://${_socketAddressController.text.trim()}:${_socketPortController.text.trim()}"!'),
           ),
         );
         _webSocket = WebsocketManager("ws://${_socketAddressController.text.trim()}:${_socketPortController.text.trim()}");
@@ -233,16 +261,13 @@ class _MyHomePageState extends State<MyHomePage> {
           Scaffold.of(context).showSnackBar(
             SnackBar(
               duration: Duration(milliseconds: 1500),
-              content: Text(
-                'DATA MESSAGE: ${message.toString()}'
-              ),
+              content: Text('DATA MESSAGE: ${message.toString()}'),
             ),
           );
           Map<String, dynamic> jsonObject = jsonDecode(message.toString());
           var webSocketStatus = WebSocketStatusMessage.fromJson(jsonObject);
-          if(webSocketStatus.command == "connect" && webSocketStatus.data == "connected")
-          {
-            setState((){
+          if (webSocketStatus.command == "connect" && webSocketStatus.data == "connected") {
+            setState(() {
               _isWebSocketConnected = true;
             });
           }
@@ -256,9 +281,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Scaffold.of(context).showSnackBar(
             SnackBar(
               duration: Duration(milliseconds: 1500),
-              content: Text(
-                'CLOSE MESSAGE: $message'
-              ),
+              content: Text('CLOSE MESSAGE: $message'),
             ),
           );
         });
@@ -273,17 +296,14 @@ class _MyHomePageState extends State<MyHomePage> {
       Scaffold.of(context).showSnackBar(
         SnackBar(
           duration: Duration(milliseconds: 1500),
-          content: Text(
-            'INFO: WebSocket is disconnecting from "ws://${_socketAddressController.text.trim()}:${_socketPortController.text.trim()}"!'
-          ),
+          content: Text('INFO: WebSocket is disconnecting from "ws://${_socketAddressController.text.trim()}:${_socketPortController.text.trim()}"!'),
         ),
       );
       _webSocket.close();
     }
   }
 
-  bool _isWebSocketClosed()
-  {
+  bool _isWebSocketClosed() {
     return !_isWebSocketConnected;
   }
 
@@ -293,9 +313,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Scaffold.of(context).showSnackBar(
         SnackBar(
           duration: Duration(milliseconds: 1500),
-          content: Text(
-            'INFO: Sending message to "ws://${_socketAddressController.text.trim()}:${_socketPortController.text.trim()}"!'
-          ),
+          content: Text('INFO: Sending message to "ws://${_socketAddressController.text.trim()}:${_socketPortController.text.trim()}"!'),
         ),
       );
       _webSocket.send(_messageController.text.trim());
@@ -309,6 +327,10 @@ class _MyHomePageState extends State<MyHomePage> {
       _isWebSocketConnected = false;
       _webSocket = null;
     }
+    _socketAddressController.dispose();
+    _socketPortController.dispose();
+    _messageController.dispose();
+    _flowRainbowDelayController.dispose();
     super.dispose();
   }
 }

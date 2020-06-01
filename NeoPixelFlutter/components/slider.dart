@@ -10,15 +10,12 @@ class CustomSlider extends StatefulWidget {
 }
 
 class _CustomSliderState extends State<CustomSlider> {
-
   double _continuousValue;
-
   @override
   void initState() {
     _continuousValue = widget.maxValue;
     super.initState();
   }
-  
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -36,9 +33,9 @@ class _CustomSliderState extends State<CustomSlider> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     SizedBox(
-                    width: 64,
-                    height: 48,
-                    child: TextField(
+                      width: 64,
+                      height: 48,
+                      child: TextField(
                         textAlign: TextAlign.center,
                         onSubmitted: (value) {
                           final newValue = double.tryParse(value);
