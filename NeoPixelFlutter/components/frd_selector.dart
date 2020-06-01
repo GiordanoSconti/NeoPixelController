@@ -37,29 +37,41 @@ class FlowRainbowDirectionState extends State<FlowRainbowDirectionSelector> {
   }
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton<_DirectionOption>(
-      padding: EdgeInsets.zero,
-      initialValue: _directionOption,
-      onSelected: (value) => showAndSetMenuSelection(context, value),
-      child: ListTile(
-        leading: Container(
-          margin: EdgeInsets.only(left: 10),
-          child: Icon(Icons.directions),
+    return Listener(
+      onPointerDown: (PointerDownEvent e) {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null)
+        {
+          currentFocus.focusedChild.unfocus();
+          currentFocus.unfocus();
+        }
+        else if(!currentFocus.hasPrimaryFocus)
+          currentFocus.unfocus();
+      },
+      child: PopupMenuButton<_DirectionOption>(
+        padding: EdgeInsets.zero,
+        initialValue: _directionOption,
+        onSelected: (value) => showAndSetMenuSelection(context, value),
+        child: ListTile(
+          leading: Container(
+            margin: const EdgeInsets.only(left: 10),
+            child: const Icon(Icons.directions),
+          ),
+          contentPadding: EdgeInsets.only(left: 0.0, right: 0.0),
+          title: const Text("Direction:", textAlign: TextAlign.start),
+          subtitle: Text("${directionOptionToString(_directionOption)}"),
         ),
-        contentPadding: EdgeInsets.only(left: 0.0, right: 0.0),
-        title: Text("Direction:", textAlign: TextAlign.start),
-        subtitle: Text("${directionOptionToString(_directionOption)}"),
+        itemBuilder: (context) => <PopupMenuItem<_DirectionOption>>[
+          PopupMenuItem<_DirectionOption>(
+            value: _DirectionOption.left,
+            child: const Text("Left"),
+          ),
+          PopupMenuItem<_DirectionOption>(
+            value: _DirectionOption.right,
+            child: const Text("Right"),
+          ),
+        ],
       ),
-      itemBuilder: (context) => <PopupMenuItem<_DirectionOption>>[
-        PopupMenuItem<_DirectionOption>(
-          value: _DirectionOption.left,
-          child: Text("Left"),
-        ),
-        PopupMenuItem<_DirectionOption>(
-          value: _DirectionOption.right,
-          child: Text("Right"),
-        ),
-      ],
     );
   }
 }

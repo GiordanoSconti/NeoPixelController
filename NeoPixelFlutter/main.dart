@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:websocket_manager/websocket_manager.dart';
 import 'package:flutter/material.dart';
 import 'components/frd_selector.dart' show FlowRainbowDirectionSelector, FlowRainbowDirectionState;
-import 'components/slider.dart' show CustomSlider;
+import 'components/slider.dart' show CustomSlider, CustomSliderState;
 
 void main() => runApp(MyApp());
 
@@ -24,7 +24,16 @@ class WebSocketStatusMessage {
   WebSocketStatusMessage({this.command, this.data});
   WebSocketStatusMessage.fromJson(Map<String, dynamic> json): command = json['status']['command'], data = json['status']['data'];
   Map<String, dynamic> toJson() => {
-    'status': {'command': command, 'data': data}
+    'status': {'command': command, 'data': data},
+  };
+}
+
+class GlobalBrightness {
+  final int brightness;
+  GlobalBrightness({this.brightness});
+  GlobalBrightness.fromJson(Map<String, dynamic> json): brightness = json['brightness'];
+  Map<String, dynamic> toJson() => {
+    'brightness': brightness,
   };
 }
 
@@ -32,9 +41,28 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final title = 'WS2812B LED Strip Controller';
-    return MaterialApp(
-      title: title,
-      home: MyHomePage(title: title),
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null)
+        {
+          currentFocus.focusedChild.unfocus();
+          currentFocus.unfocus();
+        }
+        else if(!currentFocus.hasPrimaryFocus)
+          currentFocus.unfocus();
+      },
+      child: MaterialApp(
+        title: title,
+        home: MyHomePage(title: title),
+        theme: ThemeData(
+          primaryColor: Color.fromARGB(255, 50, 168, 125),
+          textTheme: Theme.of(context).textTheme.apply(
+            bodyColor: Colors.black,
+            displayColor: Colors.black,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -52,6 +80,10 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _socketPortController = TextEditingController();
   final TextEditingController _flowRainbowDelayController = TextEditingController();
   final GlobalKey<FlowRainbowDirectionState> frdStateKey = GlobalKey<FlowRainbowDirectionState>();
+  final GlobalKey<CustomSliderState> csStateKey = GlobalKey<CustomSliderState>();
+  final RegExp addressRegExp = RegExp(r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
+  final RegExp delayRegExp = RegExp(r"^[0-9]+$");
+  final int defaultBrightnessValue = 64;
   bool _isWebSocketConnected = false;
   bool _isTaskRunning = false;
   WebsocketManager _webSocket;
@@ -70,26 +102,28 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Card(
+                  margin: const EdgeInsets.only(bottom: 30),
+                  elevation: 10.0,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Container(
-                        margin: EdgeInsets.all(5),
+                        margin: const EdgeInsets.all(5),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
                             TextField(
                               controller: _socketAddressController,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Type the remote address',
                                 prefixIcon: Icon(Icons.computer),
                               ),
                             ),
                             TextField(
                               controller: _socketPortController,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Type the remote port',
                                 prefixIcon: Icon(Icons.power),
                               ),
@@ -100,14 +134,16 @@ class _MyHomePageState extends State<MyHomePage> {
                               children: <Widget>[
                                 Container(
                                   child: RaisedButton(
-                                    child: Text('CONNECT'),
+                                    color: const Color.fromARGB(255, 50, 168, 125),
+                                    textColor: const Color.fromARGB(255, 255, 255, 255),
+                                    child: const Text('CONNECT'),
                                     onPressed: _isWebSocketClosed() ? () => _openWebSocket(context) : null,
                                   ),
                                 ),
                                 Container(
-                                  margin: EdgeInsets.only(left: 8.0),
+                                  margin: const EdgeInsets.only(left: 8.0),
                                   child: RaisedButton(
-                                    child: Text('CLOSE'),
+                                    child: const Text('CLOSE'),
                                     onPressed: _isWebSocketClosed() ? null : () => _closeWebSocket(context),
                                   ),
                                 ),
@@ -120,25 +156,27 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 Card(
+                  margin: const EdgeInsets.only(bottom: 30),
+                  elevation: 10.0,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Container(
-                        margin: EdgeInsets.all(5),
+                        margin: const EdgeInsets.all(5),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[ 
                             TextField(
                               controller: _messageController,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Send a message',
                                 prefixIcon: Icon(Icons.send),
                               ),
                             ),
                             RaisedButton(
-                              child: Text('SEND'),
+                              child: const Text('SEND'),
                               onPressed: _isWebSocketClosed() ? null : () => _sendMessage(context),
                             ),
                           ],
@@ -148,12 +186,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 Card(
+                  margin: const EdgeInsets.only(bottom: 30),
+                  elevation: 10.0,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Container(
-                        margin: EdgeInsets.all(5),
+                        margin: const EdgeInsets.all(5),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -164,7 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 Scaffold.of(context).hideCurrentSnackBar();
                                 Scaffold.of(context).showSnackBar(
                                   SnackBar(
-                                    duration: Duration(milliseconds: 1500),
+                                    duration: const Duration(milliseconds: 1500),
                                     content: Text(
                                         'INFO: Direction Selected -> $message'),
                                   ),
@@ -173,17 +213,17 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                             TextField(
                               controller: _flowRainbowDelayController,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Delay:',
                                 prefixIcon: Icon(Icons.access_time),
                               ),
                             ),
                             RaisedButton(
-                              child: Text('START FLOW RAINBOW'),
+                              child: const Text('START FLOW RAINBOW'),
                               onPressed: _isWebSocketClosed() || _isTaskRunning ? null : () => _startFlowRainbow(context),
                             ),
                             RaisedButton(
-                              child: Text('STOP FLOW RAINBOW'),
+                              child: const Text('STOP FLOW RAINBOW'),
                               onPressed: !_isWebSocketClosed() && _isTaskRunning ? () => _stopTask(context) : null,
                             ),
                           ],
@@ -192,8 +232,34 @@ class _MyHomePageState extends State<MyHomePage> {
                     ],
                   ),
                 ),
-                CustomSlider(
-                  sliderLabel: "Brightness", minValue: 0, maxValue: 100),
+                Card(
+                  elevation: 10.0,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        margin: const EdgeInsets.all(5),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            CustomSlider(
+                              key: csStateKey,
+                              sliderLabel: "Brightness",
+                              minValue: 0,
+                              maxValue: 255
+                            ),
+                            RaisedButton(
+                              child: const Text('SET BRIGHTNESS'),
+                              onPressed: !_isWebSocketClosed() && !_isTaskRunning ? () => _setBrightness(context) : null,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ],
@@ -202,13 +268,28 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void _setBrightness(BuildContext context) {
+    if(_webSocket != null && _isWebSocketConnected) {
+      int brightnessValue = int.tryParse(csStateKey.currentState.continuousValue.toStringAsFixed(0)) ?? defaultBrightnessValue;
+      GlobalBrightness globalBrightness = GlobalBrightness(brightness: brightnessValue);
+      _webSocket.send("set-brightness:" + jsonEncode(globalBrightness) + ":set-brightness");
+      Scaffold.of(context).hideCurrentSnackBar();
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          duration: const Duration(milliseconds: 1500),
+          content: Text('INFO: Setting global brightness to: $brightnessValue'),
+        ),
+      );
+    }
+  }
+
   void _stopTask(BuildContext context) {
     if (_webSocket != null && _isWebSocketConnected) {
       Scaffold.of(context).hideCurrentSnackBar();
       Scaffold.of(context).showSnackBar(
         SnackBar(
-          duration: Duration(milliseconds: 1500),
-          content: Text('INFO: Stopping running Task!'),
+          duration: const Duration(milliseconds: 1500),
+          content: const Text('INFO: Stopping running Task!'),
         ),
       );
       _webSocket.send("stop-task");
@@ -219,10 +300,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _startFlowRainbow(BuildContext context) {
-    final String direction = frdStateKey.currentState.flowDirectionString;
     if (_flowRainbowDelayController.text.isNotEmpty && _webSocket != null && _isWebSocketConnected) {
-      final int delay = int.parse(_flowRainbowDelayController.text);
-      FlowRainbow flowRainbow = FlowRainbow(direction: direction, delay: delay);
+      final bool isDelayValid = (delayRegExp.hasMatch(_flowRainbowDelayController.text) ? true : false);
+      final int delay = isDelayValid ? int.tryParse(_flowRainbowDelayController.text) ?? 0 : 0;
+      FlowRainbow flowRainbow = FlowRainbow(direction: frdStateKey.currentState.flowDirectionString, delay: delay);
       setState(() {
         _isTaskRunning = true;
       });
@@ -230,16 +311,16 @@ class _MyHomePageState extends State<MyHomePage> {
       Scaffold.of(context).hideCurrentSnackBar();
       Scaffold.of(context).showSnackBar(
         SnackBar(
-          duration: Duration(milliseconds: 1500),
-          content: Text('INFO: Flow Rainbow Started!'),
+          duration: const Duration(milliseconds: 1500),
+          content: const Text('INFO: Flow Rainbow Started!'),
         ),
       );
     } else {
       Scaffold.of(context).hideCurrentSnackBar();
       Scaffold.of(context).showSnackBar(
         SnackBar(
-          duration: Duration(milliseconds: 1500),
-          content: Text('WARNING: Delay is empty or WebSocket is not connected!'),
+          duration: const Duration(milliseconds: 1500),
+          content: const Text('WARNING: Delay is empty or WebSocket is not connected!'),
         ),
       );
     }
@@ -247,11 +328,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _openWebSocket(BuildContext context) {
     if (_webSocket == null && !_isWebSocketConnected) {
-      if (_socketAddressController.text.isNotEmpty && _socketPortController.text.isNotEmpty) {
+      final int portNumber = int.tryParse(_socketPortController.text) ?? 0;
+      final bool isPortValid = (portNumber > 0 && portNumber < 65535 ? true : false);
+      if (_socketAddressController.text.isNotEmpty && _socketPortController.text.isNotEmpty && addressRegExp.hasMatch(_socketAddressController.text) && isPortValid) {
         Scaffold.of(context).hideCurrentSnackBar();
         Scaffold.of(context).showSnackBar(
           SnackBar(
-            duration: Duration(milliseconds: 1500),
+            duration: const Duration(milliseconds: 1500),
             content: Text('INFO: WebSocket is connecting to "ws://${_socketAddressController.text.trim()}:${_socketPortController.text.trim()}"!'),
           ),
         );
@@ -260,7 +343,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Scaffold.of(context).hideCurrentSnackBar();
           Scaffold.of(context).showSnackBar(
             SnackBar(
-              duration: Duration(milliseconds: 1500),
+              duration: const Duration(milliseconds: 1500),
               content: Text('DATA MESSAGE: ${message.toString()}'),
             ),
           );
@@ -280,7 +363,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Scaffold.of(context).hideCurrentSnackBar();
           Scaffold.of(context).showSnackBar(
             SnackBar(
-              duration: Duration(milliseconds: 1500),
+              duration: const Duration(milliseconds: 1500),
               content: Text('CLOSE MESSAGE: $message'),
             ),
           );
@@ -295,7 +378,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Scaffold.of(context).hideCurrentSnackBar();
       Scaffold.of(context).showSnackBar(
         SnackBar(
-          duration: Duration(milliseconds: 1500),
+          duration: const Duration(milliseconds: 1500),
           content: Text('INFO: WebSocket is disconnecting from "ws://${_socketAddressController.text.trim()}:${_socketPortController.text.trim()}"!'),
         ),
       );
@@ -312,7 +395,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Scaffold.of(context).hideCurrentSnackBar();
       Scaffold.of(context).showSnackBar(
         SnackBar(
-          duration: Duration(milliseconds: 1500),
+          duration: const Duration(milliseconds: 1500),
           content: Text('INFO: Sending message to "ws://${_socketAddressController.text.trim()}:${_socketPortController.text.trim()}"!'),
         ),
       );

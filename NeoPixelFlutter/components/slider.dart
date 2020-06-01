@@ -6,11 +6,12 @@ class CustomSlider extends StatefulWidget {
   final double maxValue;
   CustomSlider({Key key, this.sliderLabel = "Value", this.minValue = 0, this.maxValue = 100}): super(key: key);
   @override
-  _CustomSliderState createState() => _CustomSliderState();
+  CustomSliderState createState() => CustomSliderState();
 }
 
-class _CustomSliderState extends State<CustomSlider> {
+class CustomSliderState extends State<CustomSlider> {
   double _continuousValue;
+  double get continuousValue => _continuousValue;
   @override
   void initState() {
     _continuousValue = widget.maxValue;
@@ -36,6 +37,7 @@ class _CustomSliderState extends State<CustomSlider> {
                       width: 64,
                       height: 48,
                       child: TextField(
+                        readOnly: true,
                         textAlign: TextAlign.center,
                         onSubmitted: (value) {
                           final newValue = double.tryParse(value);
