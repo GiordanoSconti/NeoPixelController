@@ -639,6 +639,10 @@ void setMusic()
     colors[1] = gValue;
     colors[2] = bValue;
     colors[3] = dynamicJsonDocument["brightness"];
+    if(colors[3] < 0)
+        colors[3] = 0;
+    else if(colors[3] > ledStripBrightness)
+        colors[3] = ledStripBrightness;
     delayMilliseconds(1);
     setNeoPixelMusic(colors);
 }
@@ -680,6 +684,10 @@ void setPattern()
         ledPattern.colors[1] = gValue;
         ledPattern.colors[2] = bValue;
         ledPattern.colors[3] = dynamicJsonDocument["brightness"];
+        if(ledPattern.colors[3] < 0)
+            ledPattern.colors[3] = 0;
+        else if(ledPattern.colors[3] > ledStripBrightness)
+            ledPattern.colors[3] = ledStripBrightness;
         ledPattern.delay = (dynamicJsonDocument["delay"] > 0 ? dynamicJsonDocument["delay"] : 0);
         ledPatterns.push_back(ledPattern);
         jsonData = jsonData.substring(jsonData.indexOf("}") + 1);
@@ -920,6 +928,10 @@ void setColors(bool isSetColorsBrightness)
             colors[i][1] = gValue;
             colors[i][2] = bValue;
             colors[i][3] = dynamicJsonDocument[String(i+1)]["brightness"];
+            if(colors[i][3] < 0)
+                colors[i][3] = 0;
+            else if(colors[i][3] > ledStripBrightness)
+                colors[i][3] = ledStripBrightness;
             delayMilliseconds(1);
         }
     }
