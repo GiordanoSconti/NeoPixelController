@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-
+typedef OnChanged(int newValue);
 class CustomSlider extends StatefulWidget {
   final String sliderLabel;
   final double minValue;
   final double maxValue;
-  CustomSlider({Key key, this.sliderLabel = "Value", this.minValue = 0, this.maxValue = 100}): super(key: key);
+  final double startValue;
+  final OnChanged onChanged;
+  CustomSlider({Key key, this.sliderLabel = "Value", this.minValue = 0, this.maxValue = 100, this.startValue = 255, this.onChanged}): super(key: key);
   @override
   CustomSliderState createState() => CustomSliderState();
 }
@@ -14,7 +16,7 @@ class CustomSliderState extends State<CustomSlider> {
   double get continuousValue => _continuousValue;
   @override
   void initState() {
-    _continuousValue = widget.maxValue;
+    _continuousValue = widget.startValue;
     super.initState();
   }
   @override
@@ -39,17 +41,9 @@ class CustomSliderState extends State<CustomSlider> {
                       child: TextField(
                         readOnly: true,
                         textAlign: TextAlign.center,
-                        onSubmitted: (value) {
-                          final newValue = double.tryParse(value);
-                          if (newValue != null && newValue != _continuousValue) {
-                            setState(() {
-                              _continuousValue = newValue.clamp(0, 100) as double;
-                            });
-                          }
-                        },
                         keyboardType: TextInputType.number,
                         controller: TextEditingController(
-                          text: _continuousValue.toStringAsFixed(0),
+                          text: _continuousValue.toStringAsFixed(0)
                         ),
                       ),
                     ),
@@ -64,6 +58,8 @@ class CustomSliderState extends State<CustomSlider> {
                   setState(() {
                     _continuousValue = value;
                   });
+                  if(widget.onChanged != null)
+                    widget.onChanged(int.tryParse(value.toStringAsFixed(0)) ?? 0);
                 },
               ),
               Text(widget.sliderLabel),

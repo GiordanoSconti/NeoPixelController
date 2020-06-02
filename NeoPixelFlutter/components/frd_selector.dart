@@ -55,20 +55,20 @@ class FlowRainbowDirectionState extends State<FlowRainbowDirectionSelector> {
         child: ListTile(
           leading: Container(
             margin: const EdgeInsets.only(left: 10),
-            child: const Icon(Icons.directions),
+            child: const Icon(Icons.directions)
           ),
           contentPadding: EdgeInsets.only(left: 0.0, right: 0.0),
           title: const Text("Direction:", textAlign: TextAlign.start),
-          subtitle: Text("${directionOptionToString(_directionOption)}"),
+          subtitle: Text("${directionOptionToString(_directionOption)}")
         ),
         itemBuilder: (context) => <PopupMenuItem<_DirectionOption>>[
           PopupMenuItem<_DirectionOption>(
             value: _DirectionOption.left,
-            child: const Text("Left"),
+            child: const Text("Left")
           ),
           PopupMenuItem<_DirectionOption>(
             value: _DirectionOption.right,
-            child: const Text("Right"),
+            child: const Text("Right")
           ),
         ],
       ),
