@@ -44,7 +44,7 @@ class LedColor {
   LedColor({this.hexRGBValue, this.iLed});
   LedColor.fromJson(Map<String, dynamic> json): hexRGBValue = json['hexRGBValue'], iLed = json["iLed"];
   Map<String, dynamic> toJson() => {
-    'brightness': hexRGBValue,
+    'hexRGBValue': hexRGBValue,
     'iLed': iLed
   };
 }
@@ -56,7 +56,7 @@ class LedsColorBrightness {
   LedsColorBrightness.fromJson(Map<String, dynamic> json): brightness = json['brightness'], hexRGBValue = json["hexRGBValue"];
   Map<String, dynamic> toJson() => {
     'brightness': brightness,
-    'hexRGBColor': hexRGBValue
+    'hexRGBValue': hexRGBValue
   };
 }
 
@@ -124,10 +124,11 @@ class _MyHomePageState extends State<MyHomePage> {
   int _redComponent = 0;
   int _greenComponent = 0;
   int _blueComponent = 0;
-  int _maxBrightnessValue = 64;
+  int _maxBrightnessValue = 128;
   bool _isWebSocketConnected = false;
   bool _isTaskRunning = false;
   bool _isLedIndexVisible = false;
+  String _hexColorString = "#000000";
   WebsocketManager _webSocket;
   @override
   Widget build(BuildContext externalContext) {
@@ -357,7 +358,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             Container(
                               margin: const EdgeInsets.only(top: 10),
                               child: Text(
-                                "#${_redComponent.toRadixString(16)}${_greenComponent.toRadixString(16)}${_blueComponent.toRadixString(16)}",
+                                _hexColorString,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16
@@ -412,7 +413,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 key: _csLedBrightnessKey,
                                 sliderLabel: "Brightness",
                                 minValue: 0.0,
-                                maxValue: _maxBrightnessValue.toDouble()
+                                maxValue: _maxBrightnessValue.toDouble(),
+                                startValue: 0,
                               ),
                             ),
                             Visibility(
@@ -451,13 +453,13 @@ class _MyHomePageState extends State<MyHomePage> {
     if(_webSocket != null && _isWebSocketConnected && !_isLedIndexVisible)
     {
       int brightnessValue = int.tryParse(_csLedBrightnessKey.currentState.continuousValue.toStringAsFixed(0)) ?? _maxBrightnessValue;
-      LedsColorBrightness ledsColorBrightness = LedsColorBrightness(brightness: brightnessValue, hexRGBValue: "#${_redComponent.toRadixString(16)}${_greenComponent.toRadixString(16)}${_blueComponent.toRadixString(16)}");
+      LedsColorBrightness ledsColorBrightness = LedsColorBrightness(brightness: brightnessValue, hexRGBValue: _hexColorString);
       _webSocket.send("set-music:" + jsonEncode(ledsColorBrightness) + ":set-music");
       Scaffold.of(context).hideCurrentSnackBar();
       Scaffold.of(context).showSnackBar(
         SnackBar(
           duration: const Duration(milliseconds: 1500),
-          content: Text('INFO: Setting leds to: Color = #${_redComponent.toRadixString(16)}${_greenComponent.toRadixString(16)}${_blueComponent.toRadixString(16)} Brightness = $brightnessValue')
+          content: Text('INFO: Setting leds to: Color = $_hexColorString Brightness = $brightnessValue')
         )
       );
     }
@@ -469,13 +471,13 @@ class _MyHomePageState extends State<MyHomePage> {
       int ledIndex = _ledIndexController.text.isNotEmpty && _numberRegExp.hasMatch(_ledIndexController.text) ? int.tryParse(_ledIndexController.text) ?? -1 : -1;
       if(ledIndex > 0)
       {
-        LedColor ledColor = LedColor(hexRGBValue: "#${_redComponent.toRadixString(16)}${_greenComponent.toRadixString(16)}${_blueComponent.toRadixString(16)}", iLed: ledIndex.toString());
+        LedColor ledColor = LedColor(hexRGBValue: _hexColorString, iLed: ledIndex.toString());
         _webSocket.send("set-color:" + jsonEncode(ledColor) + ":set-color");
         Scaffold.of(context).hideCurrentSnackBar();
         Scaffold.of(context).showSnackBar(
           SnackBar(
             duration: const Duration(milliseconds: 1500),
-            content: Text('INFO: Setting led $ledIndex color to: #${_redComponent.toRadixString(16)}${_greenComponent.toRadixString(16)}${_blueComponent.toRadixString(16)}')
+            content: Text('INFO: Setting led $ledIndex color to: $_hexColorString')
           )
         );
       }
@@ -511,21 +513,38 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  String _updateHexColorString()
+  {
+    String rComponentString = _redComponent.toRadixString(16);
+    if(rComponentString.length < 2)
+      rComponentString = "0" + rComponentString;
+    String gComponentString = _greenComponent.toRadixString(16);
+    if(gComponentString.length < 2)
+      gComponentString = "0" + gComponentString;
+    String bComponentString = _blueComponent.toRadixString(16);
+    if(bComponentString.length < 2)
+      bComponentString = "0" + bComponentString;
+    return "#" + rComponentString + gComponentString + bComponentString;
+  }
+
   void _updateRComponent(int newValue){
     this.setState(() {
       _redComponent = newValue;
+      _hexColorString = _updateHexColorString();
     });
   }
 
   void _updateGComponent(int newValue){
     this.setState(() {
       _greenComponent = newValue;
+      _hexColorString = _updateHexColorString();
     });
   }
 
   void _updateBComponent(int newValue){
     this.setState(() {
       _blueComponent = newValue;
+      _hexColorString = _updateHexColorString();
     });
   }
 
@@ -617,7 +636,7 @@ class _MyHomePageState extends State<MyHomePage> {
             });
           } else if(webSocketStatus.command == "get-brightness"){
             setState((){
-              _maxBrightnessValue = int.tryParse(webSocketStatus.data) ?? 64;
+              _maxBrightnessValue = int.tryParse(webSocketStatus.data) ?? 128;
             });
           }
         });
