@@ -19,6 +19,9 @@ class CustomSliderState extends State<CustomSlider> {
     _continuousValue = widget.startValue;
     super.initState();
   }
+  void setContinuousValue(double newValue) {
+    _continuousValue = newValue;
+  }
   @override
   Widget build(BuildContext context) {
     return Padding(

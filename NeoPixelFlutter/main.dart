@@ -553,6 +553,11 @@ class _MyHomePageState extends State<MyHomePage> {
       int brightnessValue = int.tryParse(_csGlobalBrightnessKey.currentState.continuousValue.toStringAsFixed(0)) ?? _maxBrightnessValue;
       GlobalBrightness globalBrightness = GlobalBrightness(brightness: brightnessValue);
       _webSocket.send("set-brightness:" + jsonEncode(globalBrightness) + ":set-brightness");
+      setState((){
+        _maxBrightnessValue = brightnessValue;
+        if(_csLedBrightnessKey.currentState.continuousValue > brightnessValue)
+            _csLedBrightnessKey.currentState.setContinuousValue(brightnessValue.toDouble());
+      });
       Scaffold.of(context).hideCurrentSnackBar();
       Scaffold.of(context).showSnackBar(
         SnackBar(
