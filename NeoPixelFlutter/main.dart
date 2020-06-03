@@ -119,12 +119,12 @@ class _MyHomePageState extends State<MyHomePage> {
   final GlobalKey<CustomSliderState> _csLedBrightnessKey = GlobalKey<CustomSliderState>();
   final RegExp _addressRegExp = RegExp(r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
   final RegExp _numberRegExp = RegExp(r"^[0-9]+$");
-  final int _defaultBrightnessValue = 64;
   final Color _buttonBackgroundColor = const Color.fromARGB(255, 50, 168, 125);
   final Color _buttonTextColor = const Color.fromARGB(255, 255, 255, 255);
   int _redComponent = 0;
   int _greenComponent = 0;
   int _blueComponent = 0;
+  int _maxBrightnessValue = 64;
   bool _isWebSocketConnected = false;
   bool _isTaskRunning = false;
   bool _isLedIndexVisible = false;
@@ -411,8 +411,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               child: CustomSlider(
                                 key: _csLedBrightnessKey,
                                 sliderLabel: "Brightness",
-                                minValue: 0,
-                                maxValue: 255
+                                minValue: 0.0,
+                                maxValue: _maxBrightnessValue.toDouble()
                               ),
                             ),
                             Visibility(
@@ -450,7 +450,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _setLeds(BuildContext context) {
     if(_webSocket != null && _isWebSocketConnected && !_isLedIndexVisible)
     {
-      int brightnessValue = int.tryParse(_csLedBrightnessKey.currentState.continuousValue.toStringAsFixed(0)) ?? _defaultBrightnessValue;
+      int brightnessValue = int.tryParse(_csLedBrightnessKey.currentState.continuousValue.toStringAsFixed(0)) ?? _maxBrightnessValue;
       LedsColorBrightness ledsColorBrightness = LedsColorBrightness(brightness: brightnessValue, hexRGBValue: "#${_redComponent.toRadixString(16)}${_greenComponent.toRadixString(16)}${_blueComponent.toRadixString(16)}");
       _webSocket.send("set-music:" + jsonEncode(ledsColorBrightness) + ":set-music");
       Scaffold.of(context).hideCurrentSnackBar();
@@ -485,7 +485,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _setLedBrightness(BuildContext context){
     if(_webSocket != null && _isWebSocketConnected && _isLedIndexVisible)
     {
-      int brightnessValue = int.tryParse(_csLedBrightnessKey.currentState.continuousValue.toStringAsFixed(0)) ?? _defaultBrightnessValue;
+      int brightnessValue = int.tryParse(_csLedBrightnessKey.currentState.continuousValue.toStringAsFixed(0)) ?? _maxBrightnessValue;
       int ledIndex = _ledIndexController.text.isNotEmpty && _numberRegExp.hasMatch(_ledIndexController.text) ? int.tryParse(_ledIndexController.text) ?? -1 : -1;
       if(ledIndex > 0)
       {
@@ -531,7 +531,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _setBrightness(BuildContext context) {
     if(_webSocket != null && _isWebSocketConnected) {
-      int brightnessValue = int.tryParse(_csGlobalBrightnessKey.currentState.continuousValue.toStringAsFixed(0)) ?? _defaultBrightnessValue;
+      int brightnessValue = int.tryParse(_csGlobalBrightnessKey.currentState.continuousValue.toStringAsFixed(0)) ?? _maxBrightnessValue;
       GlobalBrightness globalBrightness = GlobalBrightness(brightness: brightnessValue);
       _webSocket.send("set-brightness:" + jsonEncode(globalBrightness) + ":set-brightness");
       Scaffold.of(context).hideCurrentSnackBar();
@@ -611,8 +611,13 @@ class _MyHomePageState extends State<MyHomePage> {
           Map<String, dynamic> jsonObject = jsonDecode(message.toString());
           var webSocketStatus = WebSocketStatusMessage.fromJson(jsonObject);
           if (webSocketStatus.command == "connect" && webSocketStatus.data == "connected") {
+            _webSocket.send("get-brightness");
             setState(() {
               _isWebSocketConnected = true;
+            });
+          } else if(webSocketStatus.command == "get-brightness"){
+            setState((){
+              _maxBrightnessValue = int.tryParse(webSocketStatus.data) ?? 64;
             });
           }
         });
