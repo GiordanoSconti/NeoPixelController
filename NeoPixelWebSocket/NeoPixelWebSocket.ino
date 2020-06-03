@@ -357,13 +357,13 @@ void loop(void) {
                     getLedBrightness();
                     break;
                 case GET_BRIGHTNESS:
-                    allClients[0].send("{\"data\":" + String(ledStripBrightness) + "}");
+                    allClients[0].send("{\"status\":{\"command\":\"get-brightness\",\"data\":" + String(ledStripBrightness) + "}}");
                     break;
                 case GET_LED_COUNT:
-                    allClients[0].send("{\"data\":" + String(NUM_LEDS) + "}");
+                    allClients[0].send("{\"status\":{\"command\":\"get-led-count\",\"data\":" + String(NUM_LEDS) + "}}");
                     break;
                 case GET_TASK_IS_RUNNING:
-                    allClients[0].send("{\"data\":" + (isTaskRunning ? String("true") : String("false")) + "}");
+                    allClients[0].send("{\"status\":{\"command\":\"get-task-is-running\",\"data\":" + (isTaskRunning ? String("true") : String("false")) + "}}");
                     break;
             }
             neoPixelCommand = NO_COMMAND;
