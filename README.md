@@ -172,7 +172,7 @@ LedParameters:
 
 # NeoPixel IDE:
 You can use this web application, still in beta phase, to interact with your LED Strip.
-The only dependencies you need are a Nodejs environment and the Expressjs framework (jQuery library is loaded by CDN). If you want to download the jQuery library to not depend on the Internet Network connectivity, you're free to do that (I think I am going to do it as well, but for now I prefer using this method).
+The only dependencies you need are a Nodejs environment and the Expressjs framework (jQuery library is loaded by CDN). If you want to download the jQuery library to not depend on the Internet Network connectivity, you're free to do that (I think I'll be going to do it as well, but for now I prefer using this method).
 
 # Flutter App:
 Inside "NeoPixelFlutter" directory you can find the main source files of the application. You just have to set a Flutter environment, by following the guidelines of Google, and create a new Flutter Project (I suggest you to use Visual Studio Code as IDE with the Flutter plugin). Once the project has been created, you have a gerarichy composed by "lib" directory and other files/directories. You have to copy the "main.dart" file and the "components" directory into the "lib" directory of your project, then you need to substitute the "pubspec.yaml" file with the one provided by me (or take the changes and import them in your "pubspec.yaml" file). As last step, you have to modify the "AndroidManifest.xml" file to give the "INTERNET" permission to the app (you can read mine to know how to add the permission).
