@@ -189,3 +189,7 @@ By changing "#define BRIGHTNESS_FADE_BY" value you can move the offset of fadeTo
 * #define BRIGHTNESS_FADE_BY = Offset for fadeToBlackBy method.
 * #define SERVER_PORT_NUMBER = WebSocket Port on which the server listens.
 * #define DITHER_FLAG = Temporal Dithering flag.
+
+# Acknowledgments:
+For the HSV to RGB and RGB to HSV color domain conversion routines for ESP32, I took the versions of ratkins user:
+https://github.com/ratkins/RGBConverter.
