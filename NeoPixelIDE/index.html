@@ -378,9 +378,8 @@
                 }
                 if(checkSendOver() && checkWebSocket())
                 {
-                    ledBrightnessValue = parseInt(ledBrightnessValue);
-                    ledBrightnessValue = 255 - parseInt(scaleNumber(ledBrightnessValue));
-                    let jsObjectSetMusic = {"hexRGBValue": ledColorValue, "brightness": parseInt(ledBrightnessValue)};
+                    ledBrightnessValue = parseInt(scaleNumber(parseInt(ledBrightnessValue)));
+                    let jsObjectSetMusic = {"hexRGBValue": ledColorValue, "brightness": ledBrightnessValue};
                     clientWebSocket.send("set-music:" + JSON.stringify(jsObjectSetMusic) + ":set-music");
                 }
             }
@@ -558,6 +557,7 @@
                 if(checkLedsPresence())
                 {
                     let textAreaElement = $("#messages-from-ide");
+                    textAreaElement.val("");
                     for(let i = 0; i < ledsCount; ++i)
                     {
                         let svgLed = $("#led-" + i);
@@ -617,12 +617,12 @@
                                 console.error(err);
                             };
                             clientWebSocket.onmessage = function(message){
-                                let textAreaElement = $("#messages-from-ide");
-                                textAreaElement.val(textAreaElement.val() + "\n" + message.data);
+                                let textAreaElement = $("#messages-from-server");
+                                textAreaElement.val(message.data);
                             };
                             clientWebSocket.onopen = function(){
                                 isWebSocketConnected = true;
-                                let textAreaElement = $("#messages-from-ide");
+                                let textAreaElement = $("#messages-from-server");
                                 textAreaElement.val("");
                                 if(isTaskRunning)
                                 {
