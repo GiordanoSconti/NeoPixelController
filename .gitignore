@@ -2,3 +2,8 @@ NeoPixelIDE/resources
 NeoPixelIDE/package-lock.json
 NeoPixelIDE/node_modules
 NeoPixelIDE/public
+NeoPixelFlutter/.dart_tool
+NeoPixelFlutter/.flutter-plugins
+NeoPixelFlutter/.flutter-plugins-dependencies
+NeoPixelFlutter/.packages
+NeoPixelFlutter/pubspec.lock
